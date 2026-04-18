@@ -41,6 +41,10 @@ public class ScanConfiguration: IEntityTypeConfiguration<Scan>
                 v => Enum.Parse<ScanStatus>(v, true))
             .IsRequired();
         
+        builder.Property(x => x.InputArtifactId)
+            .HasColumnName("input_artifact_id")
+            .IsRequired();
+        
         builder.Property(x => x.CurrentStage)
             .HasColumnName("current_stage")
             .HasMaxLength(100);

@@ -10,14 +10,15 @@ public class Scan
     public PlatformType Platform { get; set; }
     public AnalysisType AnalysisType { get; set; }
     public ScanStatus Status { get; set; }
+    public long InputArtifactId { get; set; }
     
     public string? CurrentStage { get; set; }
     public string? ErrorMessage { get; set; }
     
     public DateTimeOffset CreatedAt { get; set; }
     public DateTimeOffset UpdatedAt { get; set; }
-    public DateTimeOffset StartedAt { get; set; }
-    public DateTimeOffset FinishedAt { get; set; }
+    public DateTimeOffset? StartedAt { get; set; }
+    public DateTimeOffset? FinishedAt { get; set; }
 
     public Project Project { get; set; } = null!;
     public ICollection<ScanArtifact> Artifacts { get; set; } = new List<ScanArtifact>();

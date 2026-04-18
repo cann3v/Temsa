@@ -6,11 +6,13 @@ public class ScanTask
 {
     public long Id { get; set; }
     public long ScanId { get; set; }
+    public int Order { get; set; }
 
     public string TaskType { get; set; } = string.Empty;
     public string WorkerType { get; set; } = string.Empty;
     public ScanTaskStatus Status { get; set; }
-    
+
+    public string Tool { get; set; } = string.Empty;
     public int Attempt { get; set; }
     public string? PayloadJson { get; set; }
     public string? ResultJson { get; set; }
