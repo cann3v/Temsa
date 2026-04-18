@@ -1,0 +1,6 @@
+@Temsa.Core_HostAddress = http://localhost:5177
+
+GET {{Temsa.Core_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
