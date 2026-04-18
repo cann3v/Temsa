@@ -1,0 +1,15 @@
+{
+  "platform": "android",
+  "analysisType": "static",
+  "tasks": [
+    {
+      "taskType": "binary-analysis",
+      "workerType": "static-analysis",
+      "tool": "radare2",
+      "order": 1,
+      "parameters": {
+        "ruleset": "full"
+      }
+    }
+  ]
+}

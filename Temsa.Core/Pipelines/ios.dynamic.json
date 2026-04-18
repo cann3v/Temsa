@@ -1,0 +1,24 @@
+{
+  "platform": "ios",
+  "analysisType": "dynamic",
+  "tasks": [
+    {
+      "taskType": "frida-hook-jailbreak-detection",
+      "workerType": "ios-dynamic-analysis",
+      "tool": "frida",
+      "order": 1,
+      "parameters": {
+        "script": "ios_jailbreak_detection_bypass"
+      }
+    },
+    {
+      "taskType": "frida-hook-ssl-pinning",
+      "workerType": "ios-dynamic-analysis",
+      "tool": "frida",
+      "order": 2,
+      "parameters": {
+        "script": "ios_ssl_pinning_bypass"
+      }
+    }
+  ]
+}
