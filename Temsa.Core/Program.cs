@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Temsa.Core.Application.Abstractions.Time;
 using Temsa.Core.Application.Projects.Commands.CreateProject;
 using Temsa.Core.Application.Projects.Queries.GetProject;
+using Temsa.Core.Application.Projects.Queries.ListProjects;
 using Temsa.Core.Application.Scans.Abstractions;
 using Temsa.Core.Application.Scans.Commands.CreateScan;
 using Temsa.Core.Application.Scans.Queries.GetScan;
@@ -32,6 +33,7 @@ builder.Services.AddSingleton<ScanStatusCalculator>();
 
 builder.Services.AddScoped<CreateProjectHandler>();
 builder.Services.AddScoped<GetProjectHandler>();
+builder.Services.AddScoped<ListProjectsHandler>();
 builder.Services.AddScoped<CreateScanHandler>();
 builder.Services.AddScoped<GetScanHandler>();
 

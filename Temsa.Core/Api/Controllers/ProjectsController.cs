@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Temsa.Core.Api.Contracts.Projects;
 using Temsa.Core.Application.Projects.Commands.CreateProject;
 using Temsa.Core.Application.Projects.Queries.GetProject;
+using Temsa.Core.Application.Projects.Queries.ListProjects;
 
 namespace Temsa.Core.Api.Controllers;
 
@@ -9,6 +10,26 @@ namespace Temsa.Core.Api.Controllers;
 [Route("[controller]")]
 public class ProjectsController : ControllerBase
 {
+    [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyCollection<ListProjectsItemResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll(
+        [FromServices] ListProjectsHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(
+            new ListProjectsQuery(), cancellationToken);
+        
+        var response = result
+            .Select(x =>  new ListProjectsItemResponse(
+                x.Id,
+                x.Name,
+                x.CreatedAt,
+                x.UpdatedAt))
+            .ToArray();
+
+        return Ok(response);
+    }
+    
     [HttpPost]
     [ProducesResponseType(typeof(CreateProjectResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
