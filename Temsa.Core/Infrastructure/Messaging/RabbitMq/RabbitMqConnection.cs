@@ -47,11 +47,11 @@ public class RabbitMqConnection(IOptions<RabbitMqOptions> options, ILogger<Rabbi
                 TopologyRecoveryEnabled = true
             };
 
-            _logger.LogInformation("Opening RabbitMQ connection to {Host}:{Port}", _options.Host, _options.Port);
+            _logger.LogDebug("Opening RabbitMQ connection to {Host}:{Port}", _options.Host, _options.Port);
 
             _connection = await factory.CreateConnectionAsync(cancellationToken);
 
-            _logger.LogInformation("RabbitMQ connection opened successfully");
+            _logger.LogDebug("RabbitMQ connection opened successfully");
 
             return _connection;
         }

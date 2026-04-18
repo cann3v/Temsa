@@ -1,0 +1,104 @@
+using Microsoft.AspNetCore.Mvc;
+using Temsa.Core.Api.Contracts.Scans;
+using Temsa.Core.Application.Scans.Commands.CreateScan;
+using Temsa.Core.Application.Scans.Queries.GetScan;
+
+namespace Temsa.Core.Api.Controllers;
+
+[ApiController]
+[Route("[controller]")]
+public class ScansController : ControllerBase
+{
+    [HttpPost]
+    [ProducesResponseType(typeof(CreateScanResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateScanRequest request,
+        [FromServices] CreateScanHandler handler,
+        CancellationToken cancellationToken)
+    {
+        if (request is null)
+        {
+            return BadRequest();
+        }
+
+        try
+        {
+            var result = await handler.HandleAsync(
+                new CreateScanCommand(
+                    request.ProjectId,
+                    request.InputArtifactId,
+                    request.Platform,
+                    request.AnalysisType),
+                cancellationToken);
+
+            var response = new CreateScanResponse(
+                result.ScanId,
+                result.Status,
+                result.TaskCount,
+                result.CreatedAt);
+
+            return CreatedAtAction(
+                actionName: nameof(GetById),
+                routeValues: new { id = response.ScanId },
+                value: response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new
+            {
+                error = ex.Message
+            });
+        }
+    }
+    
+    [HttpGet("{id:long}")]
+    [ProducesResponseType(typeof(GetScanResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(
+        [FromRoute] long id,
+        [FromServices] GetScanHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(
+            new GetScanQuery(id),
+            cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        var response = new GetScanResponse(
+            ScanId: result.ScanId,
+            ProjectId: result.ProjectId,
+            InputArtifactId: result.InputArtifactId,
+            Platform: result.Platform,
+            AnalysisType: result.AnalysisType,
+            Status: result.Status,
+            CurrentStage: result.CurrentStage,
+            ErrorMessage: result.ErrorMessage,
+            CreatedAt: result.CreatedAt,
+            UpdatedAt: result.UpdatedAt,
+            StartedAt: result.StartedAt,
+            FinishedAt: result.FinishedAt,
+            Tasks: result.Tasks
+                .Select(x => new GetScanTaskResponse(
+                    Id: x.Id,
+                    TaskType: x.TaskType,
+                    WorkerType: x.WorkerType,
+                    Tool: x.Tool,
+                    Order: x.Order,
+                    Status: x.Status,
+                    Attempt: x.Attempt,
+                    ErrorMessage: x.ErrorMessage,
+                    CreatedAt: x.CreatedAt,
+                    UpdatedAt: x.UpdatedAt,
+                    StartedAt: x.StartedAt,
+                    FinishedAt: x.FinishedAt))
+                .ToArray());
+
+        return Ok(response);
+    }
+}

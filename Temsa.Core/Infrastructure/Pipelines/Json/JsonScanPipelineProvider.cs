@@ -27,7 +27,7 @@ public class JsonScanPipelineProvider(
         AnalysisType analysisType,
         CancellationToken cancellationToken = default)
     {
-        var filename = $"{platform.ToString().ToLowerInvariant()}.{analysisType.ToString().ToLowerInvariant()}.json)";
+        var filename = $"{platform.ToString().ToLowerInvariant()}.{analysisType.ToString().ToLowerInvariant()}.json";
         var fullPath = Path.Combine(_environment.ContentRootPath, _options.DirectoryPath, filename);
         
         _logger.LogDebug(
