@@ -1,0 +1,87 @@
+name: temsa-infra
+
+services:
+    postgres:
+        image: postgres:18-alpine
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: appdb
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - infra_net
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres -d appdb"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        restart: unless-stopped
+        environment:
+            PGADMIN_DEFAULT_EMAIL: admin@example.com
+            PGADMIN_DEFAULT_PASSWORD: password
+            PGADMIN_CONFIG_SERVER_MODE: "False"
+        ports:
+            - "5050:80"
+        depends_on:
+            postgres:
+                condition: service_healthy
+        volumes:
+            - pgadmin_data:/var/lib/pgadmin
+        networks:
+            - infra_net
+    
+    minio:
+        image: minio/minio:latest
+        restart: unless-stopped
+        command: server /data --console-address ":9001"
+        environment:
+            MINIO_ROOT_USER: minioadmin
+            MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+            - "9000:9000"
+            - "9001:9001"
+        volumes:
+            - minio_data:/data
+        networks:
+            - infra_net
+        healthcheck:
+            test: ["CMD-SHELL", "wget -q -O - http://127.0.0.1:9000/minio/health/live >/dev/null 2>&1 || exit 1"]
+            interval: 15s
+            timeout: 5s
+            retries: 5
+
+    rabbitmq:
+        image: rabbitmq:4.2-management
+        restart: unless-stopped
+        environment:
+            RABBITMQ_DEFAULT_USER: rabbit
+            RABBITMQ_DEFAULT_PASS: rabbit
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        volumes:
+            - rabbitmq_data:/var/lib/rabbitmq
+        networks:
+            - infra_net
+        healthcheck:
+            test: ["CMD", "rabbitmq-diagnostics", "ping"]
+            interval: 15s
+            timeout: 10s
+            retries: 5
+
+volumes:
+    postgres_data:
+    minio_data:
+    rabbitmq_data:
+    pgadmin_data:
+
+networks:
+    infra_net:
+        driver: bridge
