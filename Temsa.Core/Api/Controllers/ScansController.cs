@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Temsa.Core.Api.Contracts.Scans;
 using Temsa.Core.Application.Scans.Commands.CreateScan;
+using Temsa.Core.Application.Scans.Commands.StartScan;
 using Temsa.Core.Application.Scans.Queries.GetScan;
 
 namespace Temsa.Core.Api.Controllers;
@@ -100,5 +101,44 @@ public class ScansController : ControllerBase
                 .ToArray());
 
         return Ok(response);
+    }
+
+    [HttpPost("{id:long}/start")]
+    [ProducesResponseType(typeof(StartScanResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Start(
+        [FromRoute] long id,
+        [FromServices] StartScanHandler handler,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await handler.HandleAsync(
+                new StartScanCommand(id),
+                cancellationToken);
+
+            var response = new StartScanResponse(
+                result.ScanId,
+                result.Status,
+                result.QueuedTaskCount,
+                result.UpdatedAt);
+
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("was not found"))
+        {
+            return NotFound(new
+            {
+                error = ex.Message
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new
+            {
+                error = ex.Message
+            });
+        }
     }
 }

@@ -5,6 +5,7 @@ using Temsa.Core.Application.Projects.Queries.GetProject;
 using Temsa.Core.Application.Projects.Queries.ListProjects;
 using Temsa.Core.Application.Scans.Abstractions;
 using Temsa.Core.Application.Scans.Commands.CreateScan;
+using Temsa.Core.Application.Scans.Commands.StartScan;
 using Temsa.Core.Application.Scans.Queries.GetScan;
 using Temsa.Core.Application.Scans.Services;
 using Temsa.Core.Configuration;
@@ -22,9 +23,12 @@ builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
-builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection(RabbitMqOptions.SectionName));
+builder.Services.Configure<RabbitMqOptions>(
+    builder.Configuration.GetSection(RabbitMqOptions.SectionName));
 builder.Services.Configure<JsonScanPipelineOptions>(
     builder.Configuration.GetSection(JsonScanPipelineOptions.SectionName));
+builder.Services.Configure<RabbitMqMessagingOptions>(
+    builder.Configuration.GetSection(RabbitMqMessagingOptions.SectionName));
 
 builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
@@ -36,6 +40,8 @@ builder.Services.AddScoped<GetProjectHandler>();
 builder.Services.AddScoped<ListProjectsHandler>();
 builder.Services.AddScoped<CreateScanHandler>();
 builder.Services.AddScoped<GetScanHandler>();
+builder.Services.AddScoped<IScanTaskPublisher, RabbitMqScanTaskPublisher>();
+builder.Services.AddScoped<StartScanHandler>();
 
 var postgresConnectionString = builder.Configuration.GetConnectionString("Postgres")
     ?? throw new InvalidOperationException("Connection string 'Postgres' is not configured.");
