@@ -90,7 +90,8 @@ public class ProjectsController : ControllerBase
             result.Id,
             result.Name,
             result.CreatedAt,
-            result.UpdatedAt);
+            result.UpdatedAt,
+            result.ScanIds);
 
         return Ok(response);
     }

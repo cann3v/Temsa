@@ -4,4 +4,5 @@ public record GetProjectResult(
     long Id,
     string Name,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    IReadOnlyCollection<long> ScanIds);

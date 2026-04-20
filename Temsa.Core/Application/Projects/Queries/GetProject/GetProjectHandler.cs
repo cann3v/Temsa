@@ -20,7 +20,8 @@ public class GetProjectHandler(TemsaDbContext dbContext, ILogger<GetProjectHandl
                 x.Id,
                 x.Name,
                 x.CreatedAt,
-                x.UpdatedAt))
+                x.UpdatedAt,
+                x.Scans.Select(s => s.Id).ToArray()))
             .FirstOrDefaultAsync(cancellationToken);
     }
 }
