@@ -1,4 +1,4 @@
-using Temsa.Core.Application.Scans.Models;
+using Temsa.Contracts.Messaging.ScanTasks;
 
 namespace Temsa.Core.Application.Scans.Abstractions;
 

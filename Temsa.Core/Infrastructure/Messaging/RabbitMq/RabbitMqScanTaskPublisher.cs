@@ -3,7 +3,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using Temsa.Core.Application.Scans.Abstractions;
-using Temsa.Core.Application.Scans.Models;
+using Temsa.Contracts.Messaging.ScanTasks;
 using Temsa.Core.Configuration;
 
 namespace Temsa.Core.Infrastructure.Messaging.RabbitMq;

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Temsa.Core.Application.Abstractions.Time;
 using Temsa.Core.Application.Scans.Abstractions;
-using Temsa.Core.Application.Scans.Models;
+using Temsa.Contracts.Messaging.ScanTasks;
 using Temsa.Core.Application.Scans.Services;
 using Temsa.Core.Domain.Entities;
 using Temsa.Core.Domain.Enums;
@@ -64,7 +64,7 @@ public class StartScanHandler(
                 ScanTaskId: task.Id,
                 ScanId: scan.Id,
                 InputArtifactId: scan.InputArtifactId,
-                Platform: scan.Platform,
+                Platform: scan.Platform.ToString().ToLowerInvariant(),
                 TaskType: task.TaskType,
                 Tool: task.Tool,
                 ParametersJson: task.PayloadJson);
