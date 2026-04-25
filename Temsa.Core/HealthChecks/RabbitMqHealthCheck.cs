@@ -32,6 +32,10 @@ public class RabbitMqHealthCheck(
                 _messagingOptions.ScanTasksExchange,
                 cancellationToken);
 
+            await channel.ExchangeDeclarePassiveAsync(
+                _messagingOptions.WorkerEventsExchange,
+                cancellationToken);
+
             await channel.QueueDeclarePassiveAsync(
                 _messagingOptions.StaticAnalysisQueue,
                 cancellationToken);
@@ -42,6 +46,10 @@ public class RabbitMqHealthCheck(
 
             await channel.QueueDeclarePassiveAsync(
                 _messagingOptions.IosDynamicAnalysisQueue,
+                cancellationToken);
+
+            await channel.QueueDeclarePassiveAsync(
+                _messagingOptions.Consumer.QueueName,
                 cancellationToken);
 
             return HealthCheckResult.Healthy("RabbitMQ is reachable");
