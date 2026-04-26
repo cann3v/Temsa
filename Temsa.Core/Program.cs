@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using Temsa.Core.Application.Abstractions.Time;
+using Temsa.Common.Configuration;
+using Temsa.Common.RabbitMq;
+using Temsa.Common.Time;
 using Temsa.Core.Application.Projects.Commands.CreateProject;
 using Temsa.Core.Application.Projects.Queries.GetProject;
 using Temsa.Core.Application.Projects.Queries.ListProjects;
@@ -26,10 +28,10 @@ builder.Logging.AddDebug();
 
 builder.Services.Configure<RabbitMqOptions>(
     builder.Configuration.GetSection(RabbitMqOptions.SectionName));
+builder.Services.Configure<RabbitMqConnectionOptions>(
+    builder.Configuration.GetSection($"{RabbitMqOptions.SectionName}:Connection"));
 builder.Services.Configure<JsonScanPipelineOptions>(
     builder.Configuration.GetSection(JsonScanPipelineOptions.SectionName));
-builder.Services.Configure<RabbitMqMessagingOptions>(
-    builder.Configuration.GetSection(RabbitMqMessagingOptions.SectionName));
 
 builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();

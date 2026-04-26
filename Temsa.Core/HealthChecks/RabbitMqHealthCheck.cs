@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using Temsa.Common.Configuration;
+using Temsa.Common.RabbitMq;
 using Temsa.Core.Configuration;
 using Temsa.Core.Infrastructure.Messaging.RabbitMq;
 
@@ -7,11 +9,12 @@ namespace Temsa.Core.HealthChecks;
 
 public class RabbitMqHealthCheck(
     IRabbitMqConnection rabbitMqConnection,
-    IOptions<RabbitMqMessagingOptions> messagingOptions,
+    IOptions<RabbitMqOptions> options,
     ILogger<RabbitMqHealthCheck> logger): IHealthCheck
 {
     private readonly IRabbitMqConnection _rabbitMqConnection = rabbitMqConnection;
-    private readonly RabbitMqMessagingOptions _messagingOptions = messagingOptions.Value;
+    private readonly RabbitMqScanTasksOptions _producerOptions = options.Value.Producer;
+    private readonly RabbitMqWorkerEventsOptions _consumerOptions = options.Value.Consumer;
     private readonly ILogger<RabbitMqHealthCheck> _logger = logger;
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context,
@@ -29,27 +32,27 @@ public class RabbitMqHealthCheck(
             await using var channel = await _rabbitMqConnection.CreateChannelAsync(cancellationToken);
 
             await channel.ExchangeDeclarePassiveAsync(
-                _messagingOptions.ScanTasksExchange,
+                _producerOptions.ScanTasksExchange,
                 cancellationToken);
 
             await channel.ExchangeDeclarePassiveAsync(
-                _messagingOptions.WorkerEventsExchange,
+                _consumerOptions.WorkerEventsExchange,
                 cancellationToken);
 
             await channel.QueueDeclarePassiveAsync(
-                _messagingOptions.StaticAnalysisQueue,
+                _producerOptions.StaticAnalysisQueue,
                 cancellationToken);
             
             await channel.QueueDeclarePassiveAsync(
-                _messagingOptions.AndroidDynamicAnalysisQueue,
+                _producerOptions.AndroidDynamicAnalysisQueue,
                 cancellationToken);
 
             await channel.QueueDeclarePassiveAsync(
-                _messagingOptions.IosDynamicAnalysisQueue,
+                _producerOptions.IosDynamicAnalysisQueue,
                 cancellationToken);
 
             await channel.QueueDeclarePassiveAsync(
-                _messagingOptions.Consumer.QueueName,
+                _consumerOptions.QueueName,
                 cancellationToken);
 
             return HealthCheckResult.Healthy("RabbitMQ is reachable");

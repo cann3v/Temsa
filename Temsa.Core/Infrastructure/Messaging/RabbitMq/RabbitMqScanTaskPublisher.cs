@@ -2,21 +2,22 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
+using Temsa.Common.Configuration;
+using Temsa.Common.RabbitMq;
 using Temsa.Core.Application.Scans.Abstractions;
 using Temsa.Contracts.Messaging.ScanTasks;
-using Temsa.Core.Configuration;
 
 namespace Temsa.Core.Infrastructure.Messaging.RabbitMq;
 
 public class RabbitMqScanTaskPublisher(
     IRabbitMqConnection rabbitMqConnection,
-    IOptions<RabbitMqMessagingOptions> options,
+    IOptions<RabbitMqScanTasksOptions> options,
     ILogger<RabbitMqScanTaskPublisher> logger) : IScanTaskPublisher
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
     
     private readonly IRabbitMqConnection _rabbitMqConnection = rabbitMqConnection;
-    private readonly RabbitMqMessagingOptions _options = options.Value;
+    private readonly RabbitMqScanTasksOptions _options = options.Value;
     private readonly ILogger<RabbitMqScanTaskPublisher> _logger = logger;
 
     public async Task PublishAsync(string routingKey, ScanTaskDispatchMessage message, CancellationToken cancellationToken = default)

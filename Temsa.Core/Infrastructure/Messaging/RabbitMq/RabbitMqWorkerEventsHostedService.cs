@@ -3,6 +3,8 @@ using System.Text.Json;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Temsa.Common.Configuration;
+using Temsa.Common.RabbitMq;
 using Temsa.Contracts.Messaging.WorkerEvents;
 using Temsa.Core.Application.WorkerEvents.Commands.HandleWorkerEvent;
 using Temsa.Core.Configuration;
@@ -11,14 +13,14 @@ namespace Temsa.Core.Infrastructure.Messaging.RabbitMq;
 
 public class RabbitMqWorkerEventsHostedService(
     IRabbitMqConnection rabbitMqConnection,
-    IOptions<RabbitMqMessagingOptions> options,
+    IOptions<RabbitMqOptions> options,
     IServiceScopeFactory scopeFactory,
     ILogger<RabbitMqWorkerEventsHostedService> logger) : BackgroundService
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
     
     private readonly IRabbitMqConnection _rabbitMqConnection = rabbitMqConnection;
-    private readonly RabbitMqWorkerEventsConsumerOptions _options = options.Value.Consumer;
+    private readonly RabbitMqWorkerEventsOptions _options = options.Value.Consumer;
     private readonly IServiceScopeFactory _scopeFactory =  scopeFactory;
     private readonly ILogger<RabbitMqWorkerEventsHostedService> _logger = logger;
 
