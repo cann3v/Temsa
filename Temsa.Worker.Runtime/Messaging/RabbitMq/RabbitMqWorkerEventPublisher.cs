@@ -13,7 +13,7 @@ using Temsa.Worker.Runtime.Abstractions;
 namespace Temsa.Worker.Runtime.Messaging.RabbitMq;
 
 public class RabbitMqWorkerEventPublisher(
-    RabbitMqConnection connection,
+    IRabbitMqConnection connection,
     IOptions<RabbitMqWorkerEventsOptions> options,
     IWorkerIdentityProvider identityProvider,
     IDateTimeProvider dateTimeProvider,
@@ -21,7 +21,7 @@ public class RabbitMqWorkerEventPublisher(
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
-    private readonly RabbitMqConnection _connection = connection;
+    private readonly IRabbitMqConnection _connection = connection;
     private readonly RabbitMqWorkerEventsOptions _options = options.Value;
     private readonly IWorkerIdentityProvider _identityProvider = identityProvider;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;

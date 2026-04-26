@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Temsa.Common.Configuration;
 using Temsa.Common.RabbitMq;
+using Temsa.Common.Time;
 using Temsa.Worker.Runtime.Abstractions;
 using Temsa.Worker.Runtime.Identity;
 using Temsa.Worker.Runtime.Messaging.RabbitMq;
@@ -34,6 +35,7 @@ public static class WorkerRuntimeServiceCollectionExtensions
         services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
         services.AddSingleton<IWorkerIdentityProvider, DefaultWorkerIdentityProvider>();
         services.AddSingleton<IWorkerEventPublisher, RabbitMqWorkerEventPublisher>();
+        services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
         services.AddHostedService<RabbitMqScanTaskConsumerHostedService>();
 
         return services;

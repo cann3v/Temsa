@@ -15,7 +15,7 @@ using Temsa.Worker.Runtime.Execution;
 namespace Temsa.Worker.Runtime.Messaging.RabbitMq;
 
 public class RabbitMqScanTaskConsumerHostedService(
-    RabbitMqConnection connection,
+    IRabbitMqConnection connection,
     IOptions<RabbitMqWorkerEventsOptions> options,
     IServiceScopeFactory scopeFactory,
     IWorkerIdentityProvider identityProvider,
@@ -23,7 +23,7 @@ public class RabbitMqScanTaskConsumerHostedService(
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
-    private readonly RabbitMqConnection _connection = connection;
+    private readonly IRabbitMqConnection _connection = connection;
     private readonly RabbitMqWorkerEventsOptions _options = options.Value;
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
     private readonly IWorkerIdentityProvider _identityProvider = identityProvider;

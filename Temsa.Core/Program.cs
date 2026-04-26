@@ -30,6 +30,10 @@ builder.Services.Configure<RabbitMqOptions>(
     builder.Configuration.GetSection(RabbitMqOptions.SectionName));
 builder.Services.Configure<RabbitMqConnectionOptions>(
     builder.Configuration.GetSection($"{RabbitMqOptions.SectionName}:Connection"));
+builder.Services.Configure<RabbitMqScanTasksOptions>(
+    builder.Configuration.GetSection($"{RabbitMqOptions.SectionName}:Producer"));
+builder.Services.Configure<RabbitMqWorkerEventsOptions>(
+    builder.Configuration.GetSection($"{RabbitMqOptions.SectionName}:Consumer"));
 builder.Services.Configure<JsonScanPipelineOptions>(
     builder.Configuration.GetSection(JsonScanPipelineOptions.SectionName));
 
