@@ -1,13 +1,14 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
-using Temsa.Core.Configuration;
+using Temsa.Common.Configuration;
 
-namespace Temsa.Core.Infrastructure.Messaging.RabbitMq;
+namespace Temsa.Common.RabbitMq;
 
-public class RabbitMqConnection(IOptions<RabbitMqOptions> options, ILogger<RabbitMqConnection> logger)
+public class RabbitMqConnection(IOptions<RabbitMqConnectionOptions> options, ILogger<RabbitMqConnection> logger)
     : IRabbitMqConnection
 {
-    private readonly RabbitMqOptions _options = options.Value;
+    private readonly RabbitMqConnectionOptions _options = options.Value;
     private readonly ILogger<RabbitMqConnection> _logger = logger;
     private readonly SemaphoreSlim _connectionLock = new(1, 1);
     

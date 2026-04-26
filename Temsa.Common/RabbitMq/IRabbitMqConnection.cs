@@ -1,6 +1,6 @@
 using RabbitMQ.Client;
 
-namespace Temsa.Core.Infrastructure.Messaging.RabbitMq;
+namespace Temsa.Common.RabbitMq;
 
 public interface IRabbitMqConnection: IAsyncDisposable
 {

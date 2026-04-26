@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Core", "Temsa.Core\Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Contracts", "Temsa.Contracts\Temsa.Contracts.csproj", "{949191C3-4950-4756-BE4F-A2FC95D42135}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Worker.Runtime", "Temsa.Worker.Runtime\Temsa.Worker.Runtime.csproj", "{B4F6235D-A6FF-4DB0-A746-AA7AB95CB123}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Common", "Temsa.Common\Temsa.Common.csproj", "{7D3CA7CF-3CB1-4958-8BB2-39BC25A5EF8B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{949191C3-4950-4756-BE4F-A2FC95D42135}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{949191C3-4950-4756-BE4F-A2FC95D42135}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{949191C3-4950-4756-BE4F-A2FC95D42135}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4F6235D-A6FF-4DB0-A746-AA7AB95CB123}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4F6235D-A6FF-4DB0-A746-AA7AB95CB123}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4F6235D-A6FF-4DB0-A746-AA7AB95CB123}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4F6235D-A6FF-4DB0-A746-AA7AB95CB123}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D3CA7CF-3CB1-4958-8BB2-39BC25A5EF8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D3CA7CF-3CB1-4958-8BB2-39BC25A5EF8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D3CA7CF-3CB1-4958-8BB2-39BC25A5EF8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D3CA7CF-3CB1-4958-8BB2-39BC25A5EF8B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

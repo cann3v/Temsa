@@ -1,4 +1,4 @@
-namespace Temsa.Core.Application.Abstractions.Time;
+namespace Temsa.Common.Time;
 
 public interface IDateTimeProvider
 {
