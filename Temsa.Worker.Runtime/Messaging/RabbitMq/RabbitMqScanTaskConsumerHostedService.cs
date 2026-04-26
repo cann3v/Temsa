@@ -137,13 +137,14 @@ public class RabbitMqScanTaskConsumerHostedService(
 
             try
             {
-                await handler.ExecuteAsync(context, cancellationToken);
+                var result = await handler.ExecuteAsync(context, cancellationToken);
 
                 await eventPublisher.PublishCompletedAsync(
                     task,
                     _identityProvider.WorkerId,
-                    resultJson: null,
-                    message: $"Worker completed task '{task.TaskType}'",
+                    resultJson: result.ResultJson,
+                    message: result.Message ?? $"Worker completed task '{task.TaskType}'",
+                    log: result.Log,
                     cancellationToken: cancellationToken);
 
                 _logger.LogInformation(
