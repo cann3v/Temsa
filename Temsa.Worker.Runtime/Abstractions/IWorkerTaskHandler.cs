@@ -6,7 +6,7 @@ public interface IWorkerTaskHandler
 {
     string TaskType { get; }
     
-    Task ExecuteAsync(
+    Task<WorkerTaskExecutionResult> ExecuteAsync(
         WorkerTaskContext context,
         CancellationToken cancellationToken = default);
 }
