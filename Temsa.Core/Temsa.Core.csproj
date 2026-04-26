@@ -21,7 +21,12 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Temsa.Common\Temsa.Common.csproj" />
       <ProjectReference Include="..\Temsa.Contracts\Temsa.Contracts.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Application\Abstractions\Time\" />
     </ItemGroup>
 
 </Project>

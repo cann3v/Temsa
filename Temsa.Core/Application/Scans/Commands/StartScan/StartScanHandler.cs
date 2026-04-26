@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Temsa.Core.Application.Abstractions.Time;
+using Temsa.Common.Time;
 using Temsa.Core.Application.Scans.Abstractions;
 using Temsa.Contracts.Messaging.ScanTasks;
 using Temsa.Core.Application.Scans.Services;

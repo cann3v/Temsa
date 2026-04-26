@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Temsa.Core.Application.Abstractions.Time;
+using Temsa.Common.Time;
 using Temsa.Core.Domain.Entities;
 using Temsa.Core.Infrastructure.Persistence;
 

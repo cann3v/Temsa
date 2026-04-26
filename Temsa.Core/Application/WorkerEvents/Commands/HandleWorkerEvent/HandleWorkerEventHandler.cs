@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Temsa.Common.Time;
 using Temsa.Contracts.Messaging.WorkerEvents;
-using Temsa.Core.Application.Abstractions.Time;
 using Temsa.Core.Application.Scans.Services;
 using Temsa.Core.Domain.Entities;
 using Temsa.Core.Domain.Enums;
