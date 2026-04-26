@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Worker.Runtime", "Tem
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Common", "Temsa.Common\Temsa.Common.csproj", "{7D3CA7CF-3CB1-4958-8BB2-39BC25A5EF8B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Worker.StaticAnalysis", "Temsa.Worker.StaticAnalysis\Temsa.Worker.StaticAnalysis.csproj", "{31026B11-5128-4AE1-ABDB-2943A8285116}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{7D3CA7CF-3CB1-4958-8BB2-39BC25A5EF8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D3CA7CF-3CB1-4958-8BB2-39BC25A5EF8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D3CA7CF-3CB1-4958-8BB2-39BC25A5EF8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{31026B11-5128-4AE1-ABDB-2943A8285116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31026B11-5128-4AE1-ABDB-2943A8285116}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31026B11-5128-4AE1-ABDB-2943A8285116}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31026B11-5128-4AE1-ABDB-2943A8285116}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
