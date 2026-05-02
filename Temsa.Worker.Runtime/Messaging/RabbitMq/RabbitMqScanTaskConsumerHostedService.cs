@@ -125,14 +125,11 @@ public class RabbitMqScanTaskConsumerHostedService(
 
             await AckAsync(args.DeliveryTag, cancellationToken);
 
-            var taskLogger = scope.ServiceProvider.GetRequiredService<ILogger<RabbitMqScanTaskConsumerHostedService>>();
-
             var context = new WorkerTaskContext
             {
                 Task = task,
                 WorkerId = _identityProvider.WorkerId,
-                Events = eventPublisher,
-                Logger = taskLogger
+                Events = eventPublisher
             };
 
             try
