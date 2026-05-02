@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Temsa.Contracts.Artifacts;
 using Temsa.Core.Domain.Entities;
 using Temsa.Core.Domain.Enums;
 

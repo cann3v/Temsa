@@ -1,4 +1,4 @@
-using Temsa.Core.Domain.Enums;
+using Temsa.Contracts.Artifacts;
 
 namespace Temsa.Core.Domain.Entities;
 

@@ -1,4 +1,4 @@
-namespace Temsa.Core.Domain.Enums;
+namespace Temsa.Contracts.Artifacts;
 
 public enum ArtifactKind
 {
