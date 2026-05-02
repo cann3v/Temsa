@@ -1,4 +1,3 @@
-using System.IO.Pipelines;
 using System.Text.Json;
 using Temsa.Worker.Runtime.Abstractions;
 using Temsa.Worker.Runtime.Execution;
@@ -29,7 +28,7 @@ public class SastTaskHandler(
         var parameters = new SastTaskParameters(
             InputArtifactId:  context.Task.InputArtifactId,
             Platform: context.Task.Platform,
-            Tool: context.Task.Platform,
+            Tool: context.Task.Tool,
             Ruleset: pipelineParameters.Ruleset,
             ReportFormat: pipelineParameters.ReportFormat,
             Threads: pipelineParameters.Threads);
