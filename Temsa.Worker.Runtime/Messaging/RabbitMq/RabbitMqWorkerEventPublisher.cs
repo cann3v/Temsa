@@ -80,6 +80,56 @@ public class RabbitMqWorkerEventPublisher(
             cancellationToken);
     }
 
+    public Task PublishProgressAsync(
+        ScanTaskDispatchMessage task,
+        string workerId,
+        string phase,
+        string? message = null,
+        int? percent = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(phase);
+
+        var resultJson = JsonSerializer.Serialize(new
+        {
+            phase,
+            percent
+        }, JsonSerializerOptions);
+
+        return PublishAsync(
+            task,
+            WorkerEventTypes.TaskProgress,
+            workerId,
+            message,
+            log: null,
+            resultJson,
+            cancellationToken);
+    }
+
+    public Task PublishLogAsync(ScanTaskDispatchMessage task,
+        string workerId,
+        string message,
+        string? level = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(message);
+
+        var resultJson = JsonSerializer.Serialize(new
+        {
+            message,
+            level
+        }, JsonSerializerOptions);
+
+        return PublishAsync(
+            task,
+            WorkerEventTypes.TaskLog,
+            workerId,
+            message,
+            log: message,
+            resultJson,
+            cancellationToken);
+    }
+
     private async Task PublishAsync(
         ScanTaskDispatchMessage task,
         string eventType,
@@ -121,7 +171,7 @@ public class RabbitMqWorkerEventPublisher(
             body: body,
             cancellationToken: cancellationToken);
         
-        _logger.LogInformation(
+        _logger.LogDebug(
             "Published worker event {EventType} for scan {ScanId}, task {ScanTaskId}",
             eventType,
             task.ScanId,

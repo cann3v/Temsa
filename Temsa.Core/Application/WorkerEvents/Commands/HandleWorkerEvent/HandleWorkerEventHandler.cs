@@ -93,6 +93,12 @@ public class HandleWorkerEventHandler(
             case WorkerEventTypes.TaskFailed:
                 ApplyTaskFailed(scanTask, message);
                 break;
+            
+            case WorkerEventTypes.TaskProgress:
+            case WorkerEventTypes.TaskLog:
+                ApplyNonTerminalEvent(scanTask);
+                break;
+            
             default:
                 throw new InvalidOperationException($"Unsupported worker event type '{message.EventType}'");
         }
@@ -137,7 +143,7 @@ public class HandleWorkerEventHandler(
     }
 
     private void ApplyTaskStarted(
-        Scan scan,
+        Scan scan, // TODO убрать scan?
         ScanTask scanTask,
         WorkerEventMessage message)
     {
@@ -169,6 +175,11 @@ public class HandleWorkerEventHandler(
         scanTask.ErrorMessage = message.Message;
         scanTask.ResultJson = message.ResultJson;
         scanTask.FinishedAt = message.OccuredAt == default ? _dateTimeProvider.UtcNow : message.OccuredAt;
+        scanTask.UpdatedAt = _dateTimeProvider.UtcNow;
+    }
+
+    private void ApplyNonTerminalEvent(ScanTask scanTask)
+    {
         scanTask.UpdatedAt = _dateTimeProvider.UtcNow;
     }
 

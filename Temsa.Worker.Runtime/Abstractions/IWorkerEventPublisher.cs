@@ -26,4 +26,19 @@ public interface IWorkerEventPublisher
         string? log = null,
         string? resultJson = null,
         CancellationToken cancellationToken = default);
+    
+    Task PublishProgressAsync(
+        ScanTaskDispatchMessage task,
+        string workerId,
+        string phase,
+        string? message = null,
+        int? percent = null,
+        CancellationToken cancellationToken = default);
+    
+    Task PublishLogAsync(
+        ScanTaskDispatchMessage task,
+        string workerId,
+        string message,
+        string? level = null,
+        CancellationToken cancellationToken = default);
 }
