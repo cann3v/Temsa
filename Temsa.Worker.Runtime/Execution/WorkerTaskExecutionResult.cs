@@ -1,7 +1,9 @@
+using System.Text.Json;
+
 namespace Temsa.Worker.Runtime.Execution;
 
 public record WorkerTaskExecutionResult(
-    string? ResultJson = null,
+    JsonElement? Payload = null,
     string? Message = null,
     string? Log = null)
 {

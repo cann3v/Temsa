@@ -163,7 +163,7 @@ public class HandleWorkerEventHandler(
         WorkerEventMessage message)
     {
         scanTask.Status = ScanTaskStatus.Completed;
-        scanTask.ResultJson = message.ResultJson;
+        scanTask.ResultJson = message.Payload?.GetRawText();
         scanTask.FinishedAt = message.OccuredAt == default ? _dateTimeProvider.UtcNow : message.OccuredAt;
         scanTask.UpdatedAt = _dateTimeProvider.UtcNow;
     }
@@ -174,7 +174,7 @@ public class HandleWorkerEventHandler(
     {
         scanTask.Status = ScanTaskStatus.Failed;
         scanTask.ErrorMessage = message.Message;
-        scanTask.ResultJson = message.ResultJson;
+        scanTask.ResultJson = message.Payload?.GetRawText();
         scanTask.FinishedAt = message.OccuredAt == default ? _dateTimeProvider.UtcNow : message.OccuredAt;
         scanTask.UpdatedAt = _dateTimeProvider.UtcNow;
     }
@@ -229,17 +229,6 @@ public class HandleWorkerEventHandler(
 
     private static string BuildScanEventPayloadJson(WorkerEventMessage message)
     {
-        return JsonSerializer.Serialize(new
-        {
-            message.ScanId,
-            message.ScanTaskId,
-            message.EventType,
-            message.WorkerId,
-            message.Attempt,
-            message.Message,
-            message.Log,
-            message.ResultJson,
-            message.OccuredAt
-        });
+        return JsonSerializer.Serialize(message);
     }
 }

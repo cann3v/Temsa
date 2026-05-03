@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Temsa.Contracts.Messaging.WorkerEvents;
 
 public record WorkerEventMessage(
@@ -8,5 +10,5 @@ public record WorkerEventMessage(
     int Attempt,
     string? Message,
     string? Log,
-    string? ResultJson,
+    JsonElement? Payload,
     DateTimeOffset OccuredAt);

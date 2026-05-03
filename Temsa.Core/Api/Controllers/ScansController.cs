@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Temsa.Core.Api.Contracts.Scans;
 using Temsa.Core.Api.Contracts.Scans.ScanTasks;
@@ -168,10 +169,21 @@ public class ScansController : ControllerBase
                 x.ScanId,
                 x.ScanTaskId,
                 x.EventType,
-                x.PayloadJson,
+                ParsePayloadJson(x.PayloadJson),
                 x.CreatedAt))
             .ToArray();
 
         return Ok(response);
+    }
+
+    private static JsonElement? ParsePayloadJson(string? payloadJson)
+    {
+        if (string.IsNullOrWhiteSpace(payloadJson))
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(payloadJson);
+        return document.RootElement.Clone();
     }
 }

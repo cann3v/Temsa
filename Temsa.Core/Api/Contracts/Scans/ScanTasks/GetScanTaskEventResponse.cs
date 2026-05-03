@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Temsa.Core.Api.Contracts.Scans.ScanTasks;
 
 public record GetScanTaskEventResponse(
@@ -5,5 +7,5 @@ public record GetScanTaskEventResponse(
     long ScanId,
     long? ScanTaskId,
     string EventType,
-    string? PayloadJson,
+    JsonElement? Payload,
     DateTimeOffset CreatedAt);

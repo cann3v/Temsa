@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Temsa.Contracts.Messaging.ScanTasks;
 
 namespace Temsa.Worker.Runtime.Abstractions;
@@ -14,7 +15,7 @@ public interface IWorkerEventPublisher
     Task PublishCompletedAsync(
         ScanTaskDispatchMessage task,
         string workerId,
-        string? resultJson = null,
+        JsonElement? payload = null,
         string? message = null,
         string? log = null,
         CancellationToken cancellationToken = default);
@@ -24,7 +25,7 @@ public interface IWorkerEventPublisher
         string workerId,
         string? errorMessage = null,
         string? log = null,
-        string? resultJson = null,
+        JsonElement? payload = null,
         CancellationToken cancellationToken = default);
     
     Task PublishProgressAsync(

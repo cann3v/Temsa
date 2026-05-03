@@ -40,14 +40,14 @@ public class RabbitMqWorkerEventPublisher(
             workerId,
             message,
             log,
-            resultJson: null,
+            payload: null,
             cancellationToken);
     }
 
     public Task PublishCompletedAsync(
         ScanTaskDispatchMessage task,
         string workerId,
-        string? resultJson = null,
+        JsonElement? payload = null,
         string? message = null,
         string? log = null,
         CancellationToken cancellationToken = default)
@@ -58,7 +58,7 @@ public class RabbitMqWorkerEventPublisher(
             workerId,
             message,
             log,
-            resultJson,
+            payload,
             cancellationToken);
     }
 
@@ -67,7 +67,7 @@ public class RabbitMqWorkerEventPublisher(
         string workerId,
         string? errorMessage = null,
         string? log = null,
-        string? resultJson = null,
+        JsonElement? payload = null,
         CancellationToken cancellationToken = default)
     {
         return PublishAsync(
@@ -76,7 +76,7 @@ public class RabbitMqWorkerEventPublisher(
             workerId,
             errorMessage,
             log,
-            resultJson,
+            payload,
             cancellationToken);
     }
 
@@ -89,12 +89,10 @@ public class RabbitMqWorkerEventPublisher(
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(phase);
-
-        var resultJson = JsonSerializer.Serialize(new
-        {
-            phase,
-            percent
-        }, JsonSerializerOptions);
+        
+        var payload = JsonSerializer.SerializeToElement(
+            new WorkerTaskProgressPayload(phase, percent),
+            JsonSerializerOptions);
 
         return PublishAsync(
             task,
@@ -102,7 +100,7 @@ public class RabbitMqWorkerEventPublisher(
             workerId,
             message,
             log: null,
-            resultJson,
+            payload,
             cancellationToken);
     }
 
@@ -114,11 +112,9 @@ public class RabbitMqWorkerEventPublisher(
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
 
-        var resultJson = JsonSerializer.Serialize(new
-        {
-            message,
-            level
-        }, JsonSerializerOptions);
+        var payload = JsonSerializer.SerializeToElement(
+            new WorkerTaskLogPayload(level),
+            JsonSerializerOptions);
 
         return PublishAsync(
             task,
@@ -126,7 +122,7 @@ public class RabbitMqWorkerEventPublisher(
             workerId,
             message,
             log: message,
-            resultJson,
+            payload,
             cancellationToken);
     }
 
@@ -136,7 +132,7 @@ public class RabbitMqWorkerEventPublisher(
         string workerId,
         string? message,
         string? log,
-        string? resultJson,
+        JsonElement? payload,
         CancellationToken cancellationToken)
     {
         var workerEvent = new WorkerEventMessage(
@@ -149,11 +145,11 @@ public class RabbitMqWorkerEventPublisher(
             Attempt: 1, // TODO: добавить Attempt в ScanTaskDispatchMessage
             Message: message,
             Log: log,
-            ResultJson: resultJson,
+            Payload: payload,
             OccuredAt: _dateTimeProvider.UtcNow);
 
-        var payload = JsonSerializer.Serialize(workerEvent, JsonSerializerOptions);
-        var body = Encoding.UTF8.GetBytes(payload);
+        var body = Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(workerEvent, JsonSerializerOptions));
 
         await using var channel = await _connection.CreateChannelAsync(cancellationToken);
 
