@@ -24,4 +24,5 @@ public class ScanTask
     public DateTimeOffset?  FinishedAt { get; set; }
 
     public Scan Scan { get; set; } = null!;
+    public ICollection<ScanEvent> Events { get; set; } = new List<ScanEvent>();
 }

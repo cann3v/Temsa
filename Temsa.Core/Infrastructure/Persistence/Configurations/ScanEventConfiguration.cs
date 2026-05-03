@@ -19,6 +19,9 @@ public class ScanEventConfiguration : IEntityTypeConfiguration<ScanEvent>
             .HasColumnName("scan_id")
             .IsRequired();
 
+        builder.Property(x => x.ScanTaskId)
+            .HasColumnName("scan_task_id");
+
         builder.Property(x => x.EventType)
             .HasColumnName("event_type")
             .HasMaxLength(150)
@@ -37,8 +40,15 @@ public class ScanEventConfiguration : IEntityTypeConfiguration<ScanEvent>
             .HasForeignKey(x => x.ScanId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(x => x.ScanTask)
+            .WithMany(x => x.Events)
+            .HasForeignKey(x => x.ScanTaskId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(x => x.ScanId);
+        builder.HasIndex(x => x.ScanTaskId);
         builder.HasIndex(x => x.CreatedAt);
+        builder.HasIndex(x => new { x.ScanId, x.ScanTaskId, x.CreatedAt });
         builder.HasIndex(x => x.EventType);
     }
 }

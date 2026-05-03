@@ -9,6 +9,7 @@ using Temsa.Core.Application.Scans.Abstractions;
 using Temsa.Core.Application.Scans.Commands.CreateScan;
 using Temsa.Core.Application.Scans.Commands.StartScan;
 using Temsa.Core.Application.Scans.Queries.GetScan;
+using Temsa.Core.Application.Scans.Queries.ListScanTaskEvents;
 using Temsa.Core.Application.Scans.Services;
 using Temsa.Core.Application.WorkerEvents.Commands.HandleWorkerEvent;
 using Temsa.Core.Configuration;
@@ -50,6 +51,7 @@ builder.Services.AddScoped<GetScanHandler>();
 builder.Services.AddScoped<IScanTaskPublisher, RabbitMqScanTaskPublisher>();
 builder.Services.AddScoped<StartScanHandler>();
 builder.Services.AddScoped<HandleWorkerEventHandler>();
+builder.Services.AddScoped<ListScanTaskEventsHandler>();
 
 builder.Services.AddHostedService<RabbitMqWorkerEventsHostedService>();
 

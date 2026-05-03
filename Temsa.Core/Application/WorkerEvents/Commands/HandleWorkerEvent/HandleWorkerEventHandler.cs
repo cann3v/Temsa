@@ -110,6 +110,7 @@ public class HandleWorkerEventHandler(
         
         scan.Events.Add(new ScanEvent
         {
+            ScanTaskId = message.ScanTaskId,
             EventType = message.EventType,
             PayloadJson = BuildScanEventPayloadJson(message),
             CreatedAt = _dateTimeProvider.UtcNow

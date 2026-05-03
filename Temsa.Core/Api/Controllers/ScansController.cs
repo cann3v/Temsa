@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Temsa.Core.Api.Contracts.Scans;
+using Temsa.Core.Api.Contracts.Scans.ScanTasks;
 using Temsa.Core.Application.Scans.Commands.CreateScan;
 using Temsa.Core.Application.Scans.Commands.StartScan;
 using Temsa.Core.Application.Scans.Queries.GetScan;
+using Temsa.Core.Application.Scans.Queries.ListScanTaskEvents;
 
 namespace Temsa.Core.Api.Controllers;
 
@@ -140,5 +142,36 @@ public class ScansController : ControllerBase
                 error = ex.Message
             });
         }
+    }
+
+    [HttpGet("{scanId:long}/tasks/{scanTaskId:long}/events")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<GetScanTaskEventResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetTaskEvents(
+        [FromRoute] long scanId,
+        [FromRoute] long scanTaskId,
+        [FromServices] ListScanTaskEventsHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(
+            new ListScanTaskEventsQuery(scanId, scanTaskId),
+            cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        var response = result
+            .Select(x => new GetScanTaskEventResponse(
+                x.Id,
+                x.ScanId,
+                x.ScanTaskId,
+                x.EventType,
+                x.PayloadJson,
+                x.CreatedAt))
+            .ToArray();
+
+        return Ok(response);
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Temsa.Core.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using Temsa.Core.Infrastructure.Persistence;
 namespace Temsa.Core.Migrations
 {
     [DbContext(typeof(TemsaDbContext))]
-    partial class TemsaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260503093650_Add FK scan_task_id to scan_events table")]
+    partial class AddFKscan_task_idtoscan_eventstable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
