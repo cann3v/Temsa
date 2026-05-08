@@ -53,6 +53,68 @@ namespace Temsa.Core.Migrations
                     b.ToTable("projects", (string)null);
                 });
 
+            modelBuilder.Entity("Temsa.Core.Domain.Entities.ProjectArtifact", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Bucket")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("bucket");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("file_name");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("ObjectKey")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("object_key");
+
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("project_id");
+
+                    b.Property<long?>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("size_bytes");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("ProjectId", "Type");
+
+                    b.ToTable("project_artifacts", (string)null);
+                });
+
             modelBuilder.Entity("Temsa.Core.Domain.Entities.Scan", b =>
                 {
                     b.Property<long>("Id")
@@ -313,6 +375,17 @@ namespace Temsa.Core.Migrations
                     b.ToTable("scan_tasks", (string)null);
                 });
 
+            modelBuilder.Entity("Temsa.Core.Domain.Entities.ProjectArtifact", b =>
+                {
+                    b.HasOne("Temsa.Core.Domain.Entities.Project", "Project")
+                        .WithMany("Artifacts")
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Project");
+                });
+
             modelBuilder.Entity("Temsa.Core.Domain.Entities.Scan", b =>
                 {
                     b.HasOne("Temsa.Core.Domain.Entities.Project", "Project")
@@ -366,6 +439,8 @@ namespace Temsa.Core.Migrations
 
             modelBuilder.Entity("Temsa.Core.Domain.Entities.Project", b =>
                 {
+                    b.Navigation("Artifacts");
+
                     b.Navigation("Scans");
                 });
 

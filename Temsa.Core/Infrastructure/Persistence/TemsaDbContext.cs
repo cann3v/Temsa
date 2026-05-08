@@ -10,6 +10,7 @@ public class TemsaDbContext(DbContextOptions<TemsaDbContext> options): DbContext
     public DbSet<ScanArtifact> ScanArtifacts => Set<ScanArtifact>();
     public DbSet<ScanTask> ScanTasks => Set<ScanTask>();
     public DbSet<ScanEvent> ScanEvents => Set<ScanEvent>();
+    public DbSet<ProjectArtifact> ProjectArtifacts => Set<ProjectArtifact>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

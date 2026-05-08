@@ -8,4 +8,5 @@ public class Project
     public DateTimeOffset UpdatedAt { get; set; }
     
     public ICollection<Scan> Scans { get; set; } = new List<Scan>();
+    public ICollection<ProjectArtifact> Artifacts { get; set; } = new List<ProjectArtifact>();
 }

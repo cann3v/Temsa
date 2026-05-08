@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Temsa.Common.Configuration;
 using Temsa.Common.RabbitMq;
+using Temsa.Common.Storage;
 using Temsa.Common.Time;
 using Temsa.Core.Application.Projects.Commands.CreateProject;
+using Temsa.Core.Application.Projects.Commands.UploadProjectArtifact;
 using Temsa.Core.Application.Projects.Queries.GetProject;
 using Temsa.Core.Application.Projects.Queries.ListProjects;
 using Temsa.Core.Application.Scans.Abstractions;
@@ -42,6 +44,7 @@ builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddSingleton<IScanPipelineProvider, JsonScanPipelineProvider>();
 builder.Services.AddSingleton<ScanStatusCalculator>();
+builder.Services.AddSingleton<IArtifactStorage, FakeArtifactStorage>();
 
 builder.Services.AddScoped<CreateProjectHandler>();
 builder.Services.AddScoped<GetProjectHandler>();
@@ -52,6 +55,7 @@ builder.Services.AddScoped<IScanTaskPublisher, RabbitMqScanTaskPublisher>();
 builder.Services.AddScoped<StartScanHandler>();
 builder.Services.AddScoped<HandleWorkerEventHandler>();
 builder.Services.AddScoped<ListScanTaskEventsHandler>();
+builder.Services.AddScoped<UploadProjectArtifactHandler>();
 
 builder.Services.AddHostedService<RabbitMqWorkerEventsHostedService>();
 

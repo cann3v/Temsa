@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Temsa.Contracts.Artifacts;
 using Temsa.Core.Api.Contracts.Projects;
+using Temsa.Core.Api.Contracts.Projects.Artifacts;
 using Temsa.Core.Application.Projects.Commands.CreateProject;
+using Temsa.Core.Application.Projects.Commands.UploadProjectArtifact;
 using Temsa.Core.Application.Projects.Queries.GetProject;
 using Temsa.Core.Application.Projects.Queries.ListProjects;
 
@@ -94,5 +97,65 @@ public class ProjectsController : ControllerBase
             result.ScanIds);
 
         return Ok(response);
+    }
+
+    [HttpPost("{projectId:long}/artifacts")]
+    [Consumes("multipart/form-data")]
+    [ProducesResponseType(typeof(UploadProjectArtifactResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UploadArtifact(
+        [FromRoute] long projectId,
+        [FromForm] ProjectArtifactType type,
+        [FromForm] ArtifactKind kind,
+        [FromForm] IFormFile file,
+        [FromServices] UploadProjectArtifactHandler handler,
+        CancellationToken cancellationToken)
+    {
+        if (file.Length == 0)
+        {
+            return BadRequest(new
+            {
+                error = "Artifact file is empty"
+            });
+        }
+
+        try
+        {
+            await using var stream = file.OpenReadStream();
+
+            var result = await handler.HandleAsync(
+                new UploadProjectArtifactCommand(
+                    ProjectId: projectId,
+                    Type: type,
+                    Kind: kind,
+                    Content: stream,
+                    FileName: file.FileName,
+                    ContentType: file.ContentType),
+                cancellationToken);
+
+            var response = new UploadProjectArtifactResponse(
+                result.Id,
+                result.ProjectId,
+                result.Type,
+                result.Kind,
+                result.Bucket,
+                result.ObjectKey,
+                result.FileName,
+                result.ContentType,
+                result.SizeBytes,
+                result.CreatedAt);
+
+            return Created(
+                $"/Projects/{projectId}/artifacts/{response.Id}",
+                response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(new
+            {
+                error = ex.Message
+            });
+        }
     }
 }
