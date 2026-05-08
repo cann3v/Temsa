@@ -40,6 +40,17 @@ public class CreateScanHandler(
             throw new InvalidOperationException($"Project with id {command.ProjectId} was not found");
         }
 
+        var inputArtifactExists = await _dbContext.ProjectArtifacts.AnyAsync(
+            x => x.Id == command.InputArtifactId &&
+                 x.ProjectId == command.ProjectId,
+            cancellationToken);
+
+        if (!inputArtifactExists)
+        {
+            throw new InvalidOperationException(
+                $"Input artifact with id {command.InputArtifactId} was not found in project {command.ProjectId}");
+        }
+
         var now = _dateTimeProvider.UtcNow;
 
         var pipeline = await _scanPipelineProvider.GetAsync(
