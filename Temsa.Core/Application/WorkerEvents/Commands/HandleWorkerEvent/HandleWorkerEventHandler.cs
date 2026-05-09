@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Temsa.Common.Time;
+using Temsa.Contracts.Artifacts;
 using Temsa.Contracts.Messaging.WorkerEvents;
 using Temsa.Core.Application.Scans.Services;
 using Temsa.Core.Domain.Entities;
@@ -37,6 +38,7 @@ public class HandleWorkerEventHandler(
         var scan = await _dbContext.Scans
             .Include(x => x.Tasks)
             .Include(x => x.Events)
+            .Include(x => x.Artifacts)
             .FirstOrDefaultAsync(x => x.Id == message.ScanId, cancellationToken);
 
         if (scan is null)
@@ -87,7 +89,7 @@ public class HandleWorkerEventHandler(
                 break;
             
             case WorkerEventTypes.TaskCompleted:
-                ApplyTaskCompleted(scanTask, message);
+                ApplyTaskCompleted(scan, scanTask, message);
                 break;
             
             case WorkerEventTypes.TaskFailed:
@@ -159,6 +161,7 @@ public class HandleWorkerEventHandler(
     }
 
     private void ApplyTaskCompleted(
+        Scan scan,
         ScanTask scanTask,
         WorkerEventMessage message)
     {
@@ -166,6 +169,15 @@ public class HandleWorkerEventHandler(
         scanTask.ResultJson = message.Payload?.GetRawText();
         scanTask.FinishedAt = message.OccuredAt == default ? _dateTimeProvider.UtcNow : message.OccuredAt;
         scanTask.UpdatedAt = _dateTimeProvider.UtcNow;
+
+        var completedPayload = DeserializeCompletedPayload(message);
+
+        if (completedPayload is null)
+        {
+            return;
+        }
+        
+        RegisterScanArtifacts(scan, completedPayload.Artifacts);
     }
 
     private void ApplyTaskFailed(
@@ -230,5 +242,35 @@ public class HandleWorkerEventHandler(
     private static string BuildScanEventPayloadJson(WorkerEventMessage message)
     {
         return JsonSerializer.Serialize(message);
+    }
+
+    private static WorkerTaskCompletedPayload? DeserializeCompletedPayload(
+        WorkerEventMessage message)
+    {
+        return message.Payload?.Deserialize<WorkerTaskCompletedPayload>();
+    }
+
+    private void RegisterScanArtifacts(
+        Scan scan,
+        IReadOnlyCollection<ScanArtifactDescriptor> artifactDescriptors)
+    {
+        if (artifactDescriptors.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var descriptor in artifactDescriptors)
+        {
+            scan.Artifacts.Add(new ScanArtifact
+            {
+                Kind = descriptor.Kind,
+                Bucket = descriptor.Bucket,
+                ObjectKey = descriptor.ObjectKey,
+                FileName = descriptor.FileName,
+                ContentType = descriptor.ContentType,
+                SizeBytes = descriptor.SizeBytes,
+                CreatedAt = _dateTimeProvider.UtcNow
+            });
+        }
     }
 }

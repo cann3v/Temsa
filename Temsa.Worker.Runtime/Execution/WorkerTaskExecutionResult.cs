@@ -1,9 +1,12 @@
 using System.Text.Json;
+using Temsa.Contracts.Artifacts;
 
 namespace Temsa.Worker.Runtime.Execution;
 
 public record WorkerTaskExecutionResult(
-    JsonElement? Payload = null,
+    string Status = "completed",
+    IReadOnlyCollection<ScanArtifactDescriptor>? Artifacts = null,
+    JsonElement? Result = null,
     string? Message = null,
     string? Log = null)
 {

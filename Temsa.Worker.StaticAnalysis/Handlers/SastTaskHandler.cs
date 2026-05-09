@@ -44,7 +44,9 @@ public class SastTaskHandler(
             cancellationToken);
 
         return new WorkerTaskExecutionResult(
-            Payload: JsonSerializer.SerializeToElement(result, JsonSerializerOptions),
+            Status: result.Status,
+            Artifacts: result.Artifacts,
+            Result: JsonSerializer.SerializeToElement(result, JsonSerializerOptions),
             Message: "SAST task completed successfully",
             Log: "Fake SAST execution finished");
     }

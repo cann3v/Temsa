@@ -42,7 +42,9 @@ public class DecompileTaskHandler(
             cancellationToken);
         
         return new WorkerTaskExecutionResult(
-            Payload: JsonSerializer.SerializeToElement(result, JsonSerializerOptions),
+            Status: result.Status,
+            Artifacts: result.GeneratedArtifacts,
+            Result: JsonSerializer.SerializeToElement(result, JsonSerializerOptions),
             Message: "Decompile task completed successfully",
             Log: "Fake decompile execution finished");
     }

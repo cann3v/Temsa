@@ -9,6 +9,7 @@ using RabbitMQ.Client.Events;
 using Temsa.Common.Configuration;
 using Temsa.Common.RabbitMq;
 using Temsa.Contracts.Messaging.ScanTasks;
+using Temsa.Contracts.Messaging.WorkerEvents;
 using Temsa.Worker.Runtime.Abstractions;
 using Temsa.Worker.Runtime.Execution;
 
@@ -136,10 +137,15 @@ public class RabbitMqScanTaskConsumerHostedService(
             {
                 var result = await handler.ExecuteAsync(context, cancellationToken);
 
+                var completedPayload = new WorkerTaskCompletedPayload(
+                    Status: result.Status,
+                    Artifacts: result.Artifacts ?? [],
+                    Result: result.Result);
+
                 await eventPublisher.PublishCompletedAsync(
                     task,
                     _identityProvider.WorkerId,
-                    payload: result.Payload,
+                    payload: JsonSerializer.SerializeToElement(completedPayload, JsonSerializerOptions),
                     message: result.Message ?? $"Worker completed task '{task.TaskType}'",
                     log: result.Log,
                     cancellationToken: cancellationToken);
