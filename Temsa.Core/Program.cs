@@ -1,3 +1,5 @@
+using Amazon.Runtime;
+using Amazon.S3;
 using Microsoft.EntityFrameworkCore;
 using Temsa.Common.Configuration;
 using Temsa.Common.RabbitMq;
@@ -39,12 +41,36 @@ builder.Services.Configure<RabbitMqWorkerEventsOptions>(
     builder.Configuration.GetSection($"{RabbitMqOptions.SectionName}:Consumer"));
 builder.Services.Configure<JsonScanPipelineOptions>(
     builder.Configuration.GetSection(JsonScanPipelineOptions.SectionName));
+builder.Services.Configure<ArtifactStorageOptions>(
+    builder.Configuration.GetSection(ArtifactStorageOptions.SectionName));
+
+builder.Services.AddSingleton<IAmazonS3>(serviceProvider =>
+{
+    var options = builder.Configuration
+                      .GetSection(ArtifactStorageOptions.SectionName)
+                      .Get<ArtifactStorageOptions>()
+                  ?? throw new InvalidOperationException("Artifact storage configuration is missing");
+
+    var credentials = new BasicAWSCredentials(
+        options.AccessKey,
+        options.SecretKey);
+
+    var config = new AmazonS3Config
+    {
+        ServiceURL = options.Endpoint,
+        ForcePathStyle = options.ForcePathStyle,
+        AuthenticationRegion = options.Region
+    };
+
+    return new AmazonS3Client(credentials, config);
+});
 
 builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
 builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 builder.Services.AddSingleton<IScanPipelineProvider, JsonScanPipelineProvider>();
 builder.Services.AddSingleton<ScanStatusCalculator>();
-builder.Services.AddSingleton<IArtifactStorage, FakeArtifactStorage>();
+// builder.Services.AddSingleton<IArtifactStorage, FakeArtifactStorage>();
+builder.Services.AddSingleton<IArtifactStorage, S3ArtifactStorage>();
 
 builder.Services.AddScoped<CreateProjectHandler>();
 builder.Services.AddScoped<GetProjectHandler>();

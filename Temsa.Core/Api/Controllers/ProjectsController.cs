@@ -112,6 +112,14 @@ public class ProjectsController : ControllerBase
         [FromServices] UploadProjectArtifactHandler handler,
         CancellationToken cancellationToken)
     {
+        if (file is null)
+        {
+            return BadRequest(new
+            {
+                error = "Artifact file is required"
+            });
+        }
+        
         if (file.Length == 0)
         {
             return BadRequest(new
