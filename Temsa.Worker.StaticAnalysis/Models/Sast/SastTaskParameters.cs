@@ -1,7 +1,9 @@
+using Temsa.Contracts.Artifacts;
+
 namespace Temsa.Worker.StaticAnalysis.Models.Sast;
 
 public record SastTaskParameters(
-    long InputArtifactId,
+    ProjectArtifactDescriptor InputArtifact,
     string Platform,
     string Tool,
     string? Ruleset,

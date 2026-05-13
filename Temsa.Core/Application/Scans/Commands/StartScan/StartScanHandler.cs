@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Temsa.Common.Time;
+using Temsa.Contracts.Artifacts;
 using Temsa.Core.Application.Scans.Abstractions;
 using Temsa.Contracts.Messaging.ScanTasks;
 using Temsa.Core.Application.Scans.Services;
@@ -29,6 +30,7 @@ public class StartScanHandler(
         var scan = await _dbContext.Scans
             .Include(x => x.Tasks)
             .Include(x => x.Events)
+            .Include(x => x.InputArtifact)
             .FirstOrDefaultAsync(x => x.Id == command.ScanId, cancellationToken);
 
         if (scan is null)
@@ -52,6 +54,24 @@ public class StartScanHandler(
             throw new InvalidOperationException(
                 $"Scan with id '{command.ScanId}' does not contain pending tasks");
         }
+
+        var inputArtifact = scan.InputArtifact;
+
+        if (inputArtifact is null)
+        {
+            throw new InvalidOperationException(
+                $"Input artifact with id '{scan.InputArtifactId}' was not found");
+        }
+
+        var inputArtifactDescriptor = new ProjectArtifactDescriptor(
+            Id: inputArtifact.Id,
+            Type: inputArtifact.Type,
+            Kind: inputArtifact.Kind,
+            Bucket: inputArtifact.Bucket,
+            ObjectKey: inputArtifact.ObjectKey,
+            FileName: inputArtifact.FileName,
+            ContentType: inputArtifact.ContentType,
+            SizeBytes: inputArtifact.SizeBytes);
         
         _logger.LogDebug(
             "Starting scan {ScanId} with {TaskCount} pending tasks",
@@ -63,7 +83,7 @@ public class StartScanHandler(
             var message = new ScanTaskDispatchMessage(
                 ScanTaskId: task.Id,
                 ScanId: scan.Id,
-                InputArtifactId: scan.InputArtifactId,
+                InputArtifact: inputArtifactDescriptor,
                 Platform: scan.Platform.ToString().ToLowerInvariant(),
                 TaskType: task.TaskType,
                 Tool: task.Tool,

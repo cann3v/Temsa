@@ -26,7 +26,7 @@ public class SastTaskHandler(
         var pipelineParameters = DeserializePipelineParameters(context.Task.ParametersJson);
         
         var parameters = new SastTaskParameters(
-            InputArtifactId:  context.Task.InputArtifactId,
+            InputArtifact:  context.Task.InputArtifact,
             Platform: context.Task.Platform,
             Tool: context.Task.Tool,
             Ruleset: pipelineParameters.Ruleset,

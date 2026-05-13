@@ -71,6 +71,11 @@ public class ScanConfiguration: IEntityTypeConfiguration<Scan>
             .HasForeignKey(x => x.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(x => x.InputArtifact)
+            .WithMany()
+            .HasForeignKey(x => x.InputArtifactId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasIndex(x => x.ProjectId);
         builder.HasIndex(x => x.Status);
         builder.HasIndex(x => x.CreatedAt);

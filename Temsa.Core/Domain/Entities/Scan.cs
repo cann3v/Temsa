@@ -24,4 +24,5 @@ public class Scan
     public ICollection<ScanArtifact> Artifacts { get; set; } = new List<ScanArtifact>();
     public ICollection<ScanEvent> Events { get; set; } = new List<ScanEvent>();
     public ICollection<ScanTask> Tasks { get; set; } = new List<ScanTask>();
+    public ProjectArtifact InputArtifact { get; set; } = null!;
 }

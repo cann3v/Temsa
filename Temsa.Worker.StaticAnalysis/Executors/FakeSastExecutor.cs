@@ -17,7 +17,7 @@ public class FakeSastExecutor(
         _logger.LogInformation(
             "Executing fake SAST using tool {Tool} for input artifact {InputArtifactId}",
             parameters.Tool,
-            parameters.InputArtifactId);
+            parameters.InputArtifact.Id);
 
         await events.ReportProgressAsync(
             phase: "started",

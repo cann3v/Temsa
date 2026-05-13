@@ -90,6 +90,7 @@ var postgresConnectionString = builder.Configuration.GetConnectionString("Postgr
 
 builder.Services.AddDbContext<TemsaDbContext>(options => options.UseNpgsql(postgresConnectionString));
 
+// TODO: add artifact storage health check
 builder.Services
     .AddHealthChecks()
     .AddCheck<PostgresHealthCheck>("postgres")

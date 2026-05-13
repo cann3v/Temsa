@@ -26,7 +26,7 @@ public class DecompileTaskHandler(
         var pipelineParameters = DeserializePipelineParameters(context.Task.ParametersJson);
 
         var parameters = new DecompileTaskParameters(
-            InputArtifactId: context.Task.InputArtifactId,
+            InputArtifact: context.Task.InputArtifact,
             Platform: context.Task.Platform,
             Tool: context.Task.Tool,
             OutputFormat: pipelineParameters.OutputFormat);
