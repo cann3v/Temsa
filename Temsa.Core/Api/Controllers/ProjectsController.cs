@@ -5,6 +5,7 @@ using Temsa.Core.Api.Contracts.Projects.Artifacts;
 using Temsa.Core.Application.Projects.Commands.CreateProject;
 using Temsa.Core.Application.Projects.Commands.UploadProjectArtifact;
 using Temsa.Core.Application.Projects.Queries.GetProject;
+using Temsa.Core.Application.Projects.Queries.ListProjectArtifacts;
 using Temsa.Core.Application.Projects.Queries.ListProjects;
 
 namespace Temsa.Core.Api.Controllers;
@@ -165,5 +166,40 @@ public class ProjectsController : ControllerBase
                 error = ex.Message
             });
         }
+    }
+
+    [HttpGet("{projectId:long}/artifacts")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<GetProjectArtifactResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetArtifacts(
+        [FromRoute] long projectId,
+        [FromServices] ListProjectArtifactsHandler handler,
+        CancellationToken cancellationToken
+    )
+    {
+        var result = await handler.HandleAsync(
+            new ListProjectArtifactsQuery(projectId),
+            cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        var response = result
+            .Select(x => new GetProjectArtifactResponse(
+                x.Id,
+                x.ProjectId,
+                x.Type,
+                x.Kind,
+                x.Bucket,
+                x.ObjectKey,
+                x.FileName,
+                x.ContentType,
+                x.SizeBytes,
+                x.CreatedAt))
+            .ToArray();
+
+        return Ok(response);
     }
 }

@@ -1,10 +1,12 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Temsa.Core.Api.Contracts.Scans;
+using Temsa.Core.Api.Contracts.Scans.Artifacts;
 using Temsa.Core.Api.Contracts.Scans.ScanTasks;
 using Temsa.Core.Application.Scans.Commands.CreateScan;
 using Temsa.Core.Application.Scans.Commands.StartScan;
 using Temsa.Core.Application.Scans.Queries.GetScan;
+using Temsa.Core.Application.Scans.Queries.ListScanArtifacts;
 using Temsa.Core.Application.Scans.Queries.ListScanTaskEvents;
 
 namespace Temsa.Core.Api.Controllers;
@@ -170,6 +172,39 @@ public class ScansController : ControllerBase
                 x.ScanTaskId,
                 x.EventType,
                 ParsePayloadJson(x.PayloadJson),
+                x.CreatedAt))
+            .ToArray();
+
+        return Ok(response);
+    }
+
+    [HttpGet("{scanId:long}/artifacts")]
+    [ProducesResponseType(typeof(IReadOnlyCollection<GetScanArtifactResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetArtifacts(
+        [FromRoute] long scanId,
+        [FromServices] ListScanArtifactsHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(
+            new ListScanArtifactsQuery(scanId),
+            cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        var response = result
+            .Select(x => new GetScanArtifactResponse(
+                x.Id,
+                x.ScanId,
+                x.Kind,
+                x.Bucket,
+                x.ObjectKey,
+                x.FileName,
+                x.ContentType,
+                x.SizeBytes,
                 x.CreatedAt))
             .ToArray();
 
