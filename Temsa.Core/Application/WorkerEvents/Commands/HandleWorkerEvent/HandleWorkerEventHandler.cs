@@ -252,15 +252,25 @@ public class HandleWorkerEventHandler(
 
     private void RegisterScanArtifacts(
         Scan scan,
-        IReadOnlyCollection<ScanArtifactDescriptor> artifactDescriptors)
+        IReadOnlyCollection<ScanArtifactDescriptor>? artifactDescriptors)
     {
-        if (artifactDescriptors.Count == 0)
+        if (artifactDescriptors is null || artifactDescriptors.Count == 0)
         {
             return;
         }
 
         foreach (var descriptor in artifactDescriptors)
         {
+            if (string.IsNullOrWhiteSpace(descriptor.Bucket) ||
+                string.IsNullOrWhiteSpace(descriptor.ObjectKey))
+            {
+                _logger.LogWarning(
+                    "Skipping scan artifact with empty bucket or object key. ScanId={ScanId}",
+                    scan.Id);
+                
+                continue;
+            }
+            
             scan.Artifacts.Add(new ScanArtifact
             {
                 Kind = descriptor.Kind,
