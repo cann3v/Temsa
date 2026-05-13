@@ -1,3 +1,4 @@
+using Temsa.Common.Storage;
 using Temsa.Worker.Runtime.Abstractions;
 using Temsa.Worker.StaticAnalysis.Abstractions;
 using Temsa.Worker.StaticAnalysis.Models.Sast;
@@ -5,8 +6,10 @@ using Temsa.Worker.StaticAnalysis.Models.Sast;
 namespace Temsa.Worker.StaticAnalysis.Executors;
 
 public class FakeSastExecutor(
+    IArtifactStorage artifactStorage,
     ILogger<FakeSastExecutor> logger) : ISastExecutor
 {
+    private readonly IArtifactStorage _artifactStorage = artifactStorage;
     private readonly ILogger<FakeSastExecutor> _logger = logger;
 
     public async Task<SastExecutionResult> ExecuteAsync(
@@ -23,6 +26,18 @@ public class FakeSastExecutor(
             phase: "started",
             message: "Fake SAST execution started",
             percent: 0,
+            cancellationToken);
+
+        var inputArtifact = parameters.InputArtifact;
+        var ms = new MemoryStream();
+        _logger.LogDebug("Downloading input artifact {InputArtifactId} from bucket {Bucket}, object key {ObjectKey}",
+            inputArtifact.Id,
+            inputArtifact.Bucket,
+            inputArtifact.ObjectKey);
+        await _artifactStorage.DownloadAsync(
+            inputArtifact.Bucket,
+            inputArtifact.ObjectKey,
+            ms,
             cancellationToken);
 
         await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);

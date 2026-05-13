@@ -10,4 +10,10 @@ public interface IArtifactStorage
         string? fileName,
         string? contentType,
         CancellationToken cancellationToken = default);
+    
+    Task DownloadAsync(
+        string bucket,
+        string objectKey,
+        Stream destination,
+        CancellationToken cancellationToken = default);
 }

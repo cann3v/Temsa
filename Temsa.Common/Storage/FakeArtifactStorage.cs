@@ -20,4 +20,14 @@ public class FakeArtifactStorage : IArtifactStorage
             ContentType: contentType,
             SizeBytes: content.CanSeek ? content.Length : null));
     }
+
+    public Task DownloadAsync(
+        string bucket,
+        string objectKey,
+        Stream destination,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotSupportedException(
+            "Fake artifact storage does not store artifact content and cannot download artifacts");
+    }
 }

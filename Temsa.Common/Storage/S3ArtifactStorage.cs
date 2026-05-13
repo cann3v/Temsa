@@ -68,6 +68,37 @@ public class S3ArtifactStorage(
             SizeBytes: sizeBytes);
     }
 
+    public async Task DownloadAsync(
+        string bucket,
+        string objectKey,
+        Stream destination,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(bucket);
+        ArgumentException.ThrowIfNullOrWhiteSpace(objectKey);
+        ArgumentNullException.ThrowIfNull(destination);
+
+        var request = new GetObjectRequest
+        {
+            BucketName = bucket,
+            Key = objectKey
+        };
+
+        using var response = await _s3Client.GetObjectAsync(request, cancellationToken);
+        
+        await response.ResponseStream.CopyToAsync(destination, cancellationToken);
+
+        if (destination.CanSeek)
+        {
+            destination.Position = 0;
+        }
+        
+        _logger.LogInformation(
+            "Downloaded artifact from S3 bucket {Bucket}, object key {ObjectKey}",
+            bucket,
+            objectKey);
+    }
+
     private async Task EnsureBucketExistsAsync(CancellationToken cancellationToken)
     {
         var exists = await AmazonS3Util.DoesS3BucketExistV2Async(
