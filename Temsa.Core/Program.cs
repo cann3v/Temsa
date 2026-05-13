@@ -17,6 +17,8 @@ using Temsa.Core.Application.Scans.Queries.GetScan;
 using Temsa.Core.Application.Scans.Queries.ListScanArtifacts;
 using Temsa.Core.Application.Scans.Queries.ListScanTaskEvents;
 using Temsa.Core.Application.Scans.Services;
+using Temsa.Core.Application.WorkerControl.Abstractions;
+using Temsa.Core.Application.WorkerControl.Commands.CompleteInteraction;
 using Temsa.Core.Application.WorkerEvents.Commands.HandleWorkerEvent;
 using Temsa.Core.Configuration;
 using Temsa.Core.HealthChecks;
@@ -86,6 +88,8 @@ builder.Services.AddScoped<ListScanTaskEventsHandler>();
 builder.Services.AddScoped<UploadProjectArtifactHandler>();
 builder.Services.AddScoped<ListProjectArtifactsHandler>();
 builder.Services.AddScoped<ListScanArtifactsHandler>();
+builder.Services.AddScoped<IWorkerControlPublisher, RabbitMqWorkerControlPublisher>();
+builder.Services.AddScoped<CompleteInteractionHandler>();
 
 builder.Services.AddHostedService<RabbitMqWorkerEventsHostedService>();
 

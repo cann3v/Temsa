@@ -7,6 +7,7 @@ public class RabbitMqOptions
     public RabbitMqConnectionOptions Connection { get; init; } = new();
     public RabbitMqScanTasksOptions Producer { get; init; } = new();
     public RabbitMqWorkerEventsOptions Consumer { get; init; } = new();
+    public RabbitMqWorkerControlOptions Control { get; init; } = new();
 }
 
 public class RabbitMqWorkerOptions
@@ -57,4 +58,12 @@ public class RabbitMqWorkerEventsOptions
     /// </summary>
     public string QueueName { get; init; } = string.Empty;
     public ushort PrefetchCount { get; init; } = 10;
+}
+
+public class RabbitMqWorkerControlOptions
+{
+    /// <summary>
+    /// Обменник для команд управления воркером
+    /// </summary>
+    public string WorkerControlExchange { get; init; } = string.Empty;
 }

@@ -8,6 +8,7 @@ using Temsa.Core.Application.Scans.Commands.StartScan;
 using Temsa.Core.Application.Scans.Queries.GetScan;
 using Temsa.Core.Application.Scans.Queries.ListScanArtifacts;
 using Temsa.Core.Application.Scans.Queries.ListScanTaskEvents;
+using Temsa.Core.Application.WorkerControl.Commands.CompleteInteraction;
 
 namespace Temsa.Core.Api.Controllers;
 
@@ -176,6 +177,46 @@ public class ScansController : ControllerBase
             .ToArray();
 
         return Ok(response);
+    }
+    
+    [HttpPost("{scanId:long}/tasks/{scanTaskId:long}/complete-interaction")]
+    [ProducesResponseType(typeof(CompleteInteractionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CompleteInteraction(
+        [FromRoute] long scanId,
+        [FromRoute] long scanTaskId,
+        [FromServices] CompleteInteractionHandler handler,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await handler.HandleAsync(
+                new CompleteInteractionCommand(scanId, scanTaskId),
+                cancellationToken);
+
+            var response = new CompleteInteractionResponse(
+                result.ScanId,
+                result.ScanTaskId,
+                result.CommandType,
+                result.OccuredAt);
+
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("was not found"))
+        {
+            return NotFound(new
+            {
+                error = ex.Message
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new
+            {
+                error = ex.Message
+            });
+        }
     }
 
     [HttpGet("{scanId:long}/artifacts")]
