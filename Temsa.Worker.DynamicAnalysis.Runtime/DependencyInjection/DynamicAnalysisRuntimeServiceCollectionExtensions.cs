@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Temsa.Common.Configuration;
 using Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings;
+using Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings.ClrBindings;
 using Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings.Fakes;
 using Temsa.Worker.DynamicAnalysis.Runtime.Scripts;
 
@@ -17,8 +18,9 @@ public static class DynamicAnalysisRuntimeServiceCollectionExtensions
             configuration.GetSection(FridaScriptProviderOptions.SectionName));
 
         services.AddSingleton<IFridaScriptProvider, FileFridaScriptProvider>();
-        services.AddSingleton<IFridaClient, FakeFridaClient>();
-
+        // services.AddSingleton<IFridaClient, FakeFridaClient>();
+        services.AddSingleton<IFridaClient, FridaClrClient>();
+        
         return services;
     }
 }

@@ -8,7 +8,7 @@
       "tool": "frida",
       "order": 1,
       "parameters": {
-        "packageName": "com.example.app",
+        "packageName": "owasp.sat.agoat",
         "deviceId": null,
         "sessionTimeoutSeconds": 30,
         "scriptProfile": "android-basic",

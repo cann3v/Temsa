@@ -3,7 +3,7 @@
   "scripts": [
     {
       "id": "android.lifecycle",
-      "path": "android/lifecycle.js",
+      "path": "android/lifecycle.dist.js",
       "enabled": true
     }
   ]

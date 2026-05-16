@@ -1,18 +1,28 @@
-Java.perform(function () {
+import Java from "frida-java-bridge";
+
+if (!Java.available) {
     send({
         type: "log",
-        message: "Java runtime is available"
+        level: "warning",
+        message: "Java runtime is not available"
     });
-
-    var Activity = Java.use("android.app.Activity");
-
-    Activity.onResume.implementation = function () {
+} else {
+    Java.perform(function () {
         send({
-            type: "event",
-            name: "activity.onResume",
-            activity: this.getClass().getName()
+            type: "log",
+            message: "Java runtime is available"
         });
 
-        return this.onResume();
-    };
-});
+        const Activity = Java.use("android.app.Activity");
+
+        Activity.onResume.implementation = function () {
+            send({
+                type: "event",
+                name: "activity.onResume",
+                activity: this.getClass().getName()
+            });
+
+            return this.onResume();
+        };
+    });
+}
