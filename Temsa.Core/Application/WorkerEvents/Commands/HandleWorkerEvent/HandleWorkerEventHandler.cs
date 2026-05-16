@@ -16,10 +16,10 @@ public class HandleWorkerEventHandler(
     ScanStatusCalculator scanStatusCalculator,
     ILogger<HandleWorkerEventHandler> logger)
 {
-    TemsaDbContext _dbContext = dbContext;
-    IDateTimeProvider _dateTimeProvider = dateTimeProvider;
-    ScanStatusCalculator _scanStatusCalculator = scanStatusCalculator;
-    ILogger<HandleWorkerEventHandler> _logger = logger;
+    private readonly TemsaDbContext _dbContext = dbContext;
+    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
+    private readonly ScanStatusCalculator _scanStatusCalculator = scanStatusCalculator;
+    private readonly ILogger<HandleWorkerEventHandler> _logger = logger;
 
     public async Task<HandleWorkerEventResult> HandleAsync(
         HandleWorkerEventCommand command,
