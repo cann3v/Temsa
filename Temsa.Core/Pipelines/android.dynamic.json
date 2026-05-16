@@ -3,21 +3,17 @@
   "analysisType": "dynamic",
   "tasks": [
     {
-      "taskType": "frida-hook-root-detection",
+      "taskType": "android-dynamic-session",
       "workerType": "android-dynamic-analysis",
       "tool": "frida",
       "order": 1,
       "parameters": {
-        "script": "android_root_detection_bypass"
-      }
-    },
-    {
-      "taskType": "frida-hook-ssl-pinning",
-      "workerType": "android-dynamic-analysis",
-      "tool": "frida",
-      "order": 2,
-      "parameters": {
-        "script": "android_ssl_pinning_bypass"
+        "packageName": "com.example.app",
+        "deviceId": null,
+        "sessionTimeoutSeconds": 30,
+        "scriptProfile": "android-basic",
+        "enabledScripts": [],
+        "disabledScripts": []
       }
     }
   ]

@@ -1,0 +1,10 @@
+{
+  "name": "android-basic",
+  "scripts": [
+    {
+      "id": "android.lifecycle",
+      "path": "android/lifecycle.js",
+      "enabled": true
+    }
+  ]
+}
