@@ -1,4 +1,4 @@
-namespace Temsa.Worker.DynamicAnalysis.Runtime.Frida;
+namespace Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings;
 
 public interface IFridaClient
 {

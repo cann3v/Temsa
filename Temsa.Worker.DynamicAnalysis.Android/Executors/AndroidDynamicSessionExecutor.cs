@@ -1,11 +1,10 @@
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
 using Temsa.Common.Storage;
 using Temsa.Contracts.Artifacts;
 using Temsa.Worker.DynamicAnalysis.Android.Abstractions;
 using Temsa.Worker.DynamicAnalysis.Android.Models;
-using Temsa.Worker.DynamicAnalysis.Runtime.Frida;
+using Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings;
 using Temsa.Worker.DynamicAnalysis.Runtime.Scripts;
 using Temsa.Worker.Runtime.Abstractions;
 

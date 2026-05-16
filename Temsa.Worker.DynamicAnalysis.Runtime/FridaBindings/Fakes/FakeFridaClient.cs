@@ -1,7 +1,7 @@
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 
-namespace Temsa.Worker.DynamicAnalysis.Runtime.Frida.Fakes;
+namespace Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings.Fakes;
 
 public class FakeFridaClient(
     ILogger<FakeFridaClient> logger) : IFridaClient

@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Temsa.Common.Configuration;
-using Temsa.Worker.DynamicAnalysis.Runtime.Frida;
-using Temsa.Worker.DynamicAnalysis.Runtime.Frida.Fakes;
+using Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings;
+using Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings.Fakes;
 using Temsa.Worker.DynamicAnalysis.Runtime.Scripts;
 
 namespace Temsa.Worker.DynamicAnalysis.Runtime.DependencyInjection;

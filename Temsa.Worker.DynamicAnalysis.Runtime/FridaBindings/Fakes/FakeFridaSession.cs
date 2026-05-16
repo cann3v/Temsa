@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 
-namespace Temsa.Worker.DynamicAnalysis.Runtime.Frida.Fakes;
+namespace Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings.Fakes;
 
 public class FakeFridaSession(
     Channel<FridaMessage> channel,
