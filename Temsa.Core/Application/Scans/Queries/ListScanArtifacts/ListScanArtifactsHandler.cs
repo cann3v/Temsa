@@ -22,7 +22,7 @@ public class ListScanArtifactsHandler(TemsaDbContext dbContext)
         
         return await _dbContext.ScanArtifacts
             .AsNoTracking()
-            .Where(x => x.Id == query.ScanId)
+            .Where(x => x.ScanId == query.ScanId)
             .OrderByDescending(x => x.CreatedAt)
             .Select(x => new ListScanArtifactsItem(
                 x.Id,

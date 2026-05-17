@@ -16,6 +16,8 @@ public class HandleWorkerEventHandler(
     ScanStatusCalculator scanStatusCalculator,
     ILogger<HandleWorkerEventHandler> logger)
 {
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
+    
     private readonly TemsaDbContext _dbContext = dbContext;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly ScanStatusCalculator _scanStatusCalculator = scanStatusCalculator;
@@ -241,13 +243,13 @@ public class HandleWorkerEventHandler(
 
     private static string BuildScanEventPayloadJson(WorkerEventMessage message)
     {
-        return JsonSerializer.Serialize(message);
+        return JsonSerializer.Serialize(message, JsonSerializerOptions);
     }
 
     private static WorkerTaskCompletedPayload? DeserializeCompletedPayload(
         WorkerEventMessage message)
     {
-        return message.Payload?.Deserialize<WorkerTaskCompletedPayload>();
+        return message.Payload?.Deserialize<WorkerTaskCompletedPayload>(JsonSerializerOptions);
     }
 
     private void RegisterScanArtifacts(
@@ -271,8 +273,9 @@ public class HandleWorkerEventHandler(
                 continue;
             }
             
-            scan.Artifacts.Add(new ScanArtifact
+            _dbContext.ScanArtifacts.Add(new ScanArtifact
             {
+                ScanId = scan.Id,
                 Kind = descriptor.Kind,
                 Bucket = descriptor.Bucket,
                 ObjectKey = descriptor.ObjectKey,
