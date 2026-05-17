@@ -70,9 +70,9 @@ public class JsonScanPipelineProvider(
                 WorkerType = RequireValue(x.WorkerType, nameof(x.WorkerType), fullPath),
                 Tool = RequireValue(x.Tool, nameof(x.Tool), fullPath),
                 Order = x.Order,
-                ParametersJson = x.Parameters.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null
-                    ? null
-                    : x.Parameters.GetRawText()
+                ParametersJson = MergeParameters(
+                    document.Parameters,
+                    x.Parameters)
             })
             .ToArray();
 
@@ -120,12 +120,61 @@ public class JsonScanPipelineProvider(
 
         return value.Trim();
     }
+    
+    private static string? MergeParameters(
+        JsonElement sharedParameters,
+        JsonElement taskParameters)
+    {
+        var hasShared = sharedParameters.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null;
+        var hasTask = taskParameters.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null;
+
+        if (!hasShared && !hasTask)
+        {
+            return null;
+        }
+
+        if (!hasShared)
+        {
+            return taskParameters.GetRawText();
+        }
+
+        if (!hasTask)
+        {
+            return sharedParameters.GetRawText();
+        }
+
+        if (sharedParameters.ValueKind != JsonValueKind.Object ||
+            taskParameters.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException(
+                "Pipeline shared parameters and task parameters must be JSON objects");
+        }
+
+        var merged = new Dictionary<string, JsonElement>(
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var property in sharedParameters.EnumerateObject())
+        {
+            merged[property.Name] = property.Value.Clone();
+        }
+
+        foreach (var property in taskParameters.EnumerateObject())
+        {
+            merged[property.Name] = property.Value.Clone();
+        }
+
+        return JsonSerializer.Serialize(
+            merged,
+            JsonSerializerOptions);
+    }
+
 
     private class RawPipelineDocument
     {
         public string? Platform { get; init; }
         public string? AnalysisType { get; init; }
         public List<RawPipelineTaskDocument> Tasks { get; init; } = [];
+        public JsonElement Parameters { get; init; }
     }
 
     private class RawPipelineTaskDocument

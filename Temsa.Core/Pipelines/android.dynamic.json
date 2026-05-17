@@ -1,6 +1,10 @@
 {
   "platform": "android",
   "analysisType": "dynamic",
+  "parameters": {
+    "packageName": "owasp.sat.agoat",
+    "deviceId": null
+  },
   "tasks": [
     {
       "taskType": "android-install-app",
@@ -8,7 +12,6 @@
       "tool": "adb",
       "order": 1,
       "parameters": {
-        "deviceId": null,
         "reinstall": true
       }
     },
@@ -16,11 +19,7 @@
       "taskType": "android-clear-app-data",
       "workerType": "android-dynamic-analysis",
       "tool": "adb",
-      "order": 2,
-      "parameters": {
-        "packageName": "owasp.sat.agoat",
-        "deviceId": null
-      }
+      "order": 2
     },
     {
       "taskType": "android-dynamic-session",
@@ -28,9 +27,7 @@
       "tool": "frida",
       "order": 3,
       "parameters": {
-        "packageName": "owasp.sat.agoat",
-        "deviceId": null,
-        "sessionTimeoutSeconds": 7,
+        "sessionTimeoutSeconds": 10,
         "scriptProfile": "android-basic",
         "enabledScripts": [],
         "disabledScripts": []
@@ -40,21 +37,13 @@
       "taskType": "android-force-stop-app",
       "workerType": "android-dynamic-analysis",
       "tool": "adb",
-      "order": 4,
-      "parameters": {
-        "packageName": "owasp.sat.agoat",
-        "deviceId": null
-      }
+      "order": 4
     },
     {
       "taskType": "android-uninstall-app",
       "workerType": "android-dynamic-analysis",
       "tool": "adb",
-      "order": 5,
-      "parameters": {
-        "packageName": "owasp.sat.agoat",
-        "deviceId": null
-      }
+      "order": 5
     }
   ]
 }
