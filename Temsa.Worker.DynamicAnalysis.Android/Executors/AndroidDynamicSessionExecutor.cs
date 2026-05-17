@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Temsa.Common.Storage;
+using Temsa.Common.Time;
 using Temsa.Contracts.Artifacts;
 using Temsa.Worker.DynamicAnalysis.Android.Abstractions;
 using Temsa.Worker.DynamicAnalysis.Android.Models;
@@ -14,6 +15,7 @@ public class AndroidDynamicSessionExecutor(
     IArtifactStorage artifactStorage,
     IFridaScriptProvider scriptProvider,
     IFridaClient fridaClient,
+    IDateTimeProvider dateTimeProvider,
     ILogger<AndroidDynamicSessionExecutor> logger) : IAndroidDynamicSessionExecutor
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -21,6 +23,7 @@ public class AndroidDynamicSessionExecutor(
     private readonly IArtifactStorage _artifactStorage = artifactStorage;
     private readonly IFridaScriptProvider _scriptProvider = scriptProvider;
     private readonly IFridaClient _fridaClient = fridaClient;
+    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly ILogger<AndroidDynamicSessionExecutor> _logger = logger;
 
     public async Task<AndroidDynamicSessionExecutionResult> ExecuteAsync(
@@ -167,7 +170,7 @@ public class AndroidDynamicSessionExecutor(
         }
     }
 
-    private static async Task<int> CollectFridaMessagesAsync(
+    private async Task<int> CollectFridaMessagesAsync(
         IFridaSession fridaSession,
         string logPath,
         TimeSpan timeout,
@@ -192,7 +195,9 @@ public class AndroidDynamicSessionExecutor(
             {
                 count++;
 
-                var json = JsonSerializer.Serialize(message, JsonSerializerOptions);
+                var record = CreateFridaLogRecord(message);
+                var json = JsonSerializer.Serialize(record, JsonSerializerOptions);
+                
                 await writer.WriteLineAsync(json);
                 await writer.FlushAsync(linkedCts.Token);
 
@@ -215,5 +220,57 @@ public class AndroidDynamicSessionExecutor(
         }
 
         return count;
+    }
+
+    private FridaLogRecord CreateFridaLogRecord(FridaMessage message)
+    {
+        var parsedMessage = ParseFridaMessage(message.Message);
+        var type = TryGetStringProperty(parsedMessage, "type");
+        var payload = TryCloneProperty(parsedMessage, "payload");
+
+        return new FridaLogRecord(
+            ScriptId: message.ScriptId,
+            OccuredAt: _dateTimeProvider.UtcNow,
+            Type: type,
+            Message: parsedMessage,
+            Payload: payload,
+            DataBase64: message.Data is null ? null : Convert.ToBase64String(message.Data),
+            DataLength: message.Data?.Length);
+    }
+
+    private static JsonElement ParseFridaMessage(string rawMessage)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(rawMessage);
+            return document.RootElement.Clone();
+        }
+        catch (JsonException)
+        {
+            return JsonSerializer.SerializeToElement(rawMessage);
+        }
+    }
+
+    private static string? TryGetStringProperty(JsonElement element, string propertyName)
+    {
+        if (element.ValueKind != JsonValueKind.Object ||
+            !element.TryGetProperty(propertyName, out var property) ||
+            property.ValueKind != JsonValueKind.String)
+        {
+            return null;
+        }
+
+        return property.GetString();
+    }
+
+    private static JsonElement? TryCloneProperty(JsonElement element, string propertyName)
+    {
+        if (element.ValueKind != JsonValueKind.Object ||
+            !element.TryGetProperty(propertyName, out var property))
+        {
+            return null;
+        }
+
+        return property.Clone();
     }
 }
