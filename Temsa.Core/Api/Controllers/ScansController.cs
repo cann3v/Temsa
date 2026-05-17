@@ -6,6 +6,7 @@ using Temsa.Core.Api.Contracts.Scans.ScanTasks;
 using Temsa.Core.Application.Scans.Commands.CreateScan;
 using Temsa.Core.Application.Scans.Commands.StartScan;
 using Temsa.Core.Application.Scans.Queries.GetScan;
+using Temsa.Core.Application.Scans.Queries.GetScanArtifactContent;
 using Temsa.Core.Application.Scans.Queries.ListScanArtifacts;
 using Temsa.Core.Application.Scans.Queries.ListScanTaskEvents;
 using Temsa.Core.Application.WorkerControl.Commands.CompleteInteraction;
@@ -250,6 +251,30 @@ public class ScansController : ControllerBase
             .ToArray();
 
         return Ok(response);
+    }
+
+    [HttpGet("{scanId:long}/artifacts/{artifactId:long}/content")]
+    [ProducesResponseType(typeof(FileStreamResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetArtifactContent(
+        [FromRoute] long scanId,
+        [FromRoute] long artifactId,
+        [FromServices] GetScanArtifactContentHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(
+            new GetScanArtifactContentQuery(scanId, artifactId),
+            cancellationToken);
+
+        if (result is null)
+        {
+            return NotFound();
+        }
+
+        return File(
+            result.Content,
+            result.ContentType,
+            result.FileName);
     }
 
     private static JsonElement? ParsePayloadJson(string? payloadJson)
