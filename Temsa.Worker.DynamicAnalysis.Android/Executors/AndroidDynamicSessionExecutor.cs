@@ -4,7 +4,7 @@ using Temsa.Common.Storage;
 using Temsa.Common.Time;
 using Temsa.Contracts.Artifacts;
 using Temsa.Worker.DynamicAnalysis.Android.Abstractions;
-using Temsa.Worker.DynamicAnalysis.Android.Models;
+using Temsa.Worker.DynamicAnalysis.Android.Models.AndroidDynamicSession;
 using Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings;
 using Temsa.Worker.DynamicAnalysis.Runtime.Scripts;
 using Temsa.Worker.Runtime.Abstractions;
@@ -42,25 +42,6 @@ public class AndroidDynamicSessionExecutor(
 
         try
         {
-            var inputFilePath = Path.Combine(
-                tempDirectory,
-                parameters.InputArtifact.FileName ?? "input.apk");
-
-            await using (var inputFile = File.Create(inputFilePath))
-            {
-                await _artifactStorage.DownloadAsync(
-                    parameters.InputArtifact.Bucket,
-                    parameters.InputArtifact.ObjectKey,
-                    inputFile,
-                    cancellationToken);
-            }
-
-            await events.ReportProgressAsync(
-                phase: "input_download",
-                message: "Input APK downloaded from artifact storage",
-                percent: 10,
-                cancellationToken);
-
             var loadedScripts = await _scriptProvider.LoadScriptAsync(
                 parameters.ScriptProfile,
                 parameters.EnabledScripts,

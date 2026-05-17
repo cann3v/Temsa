@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Temsa.Worker.DynamicAnalysis.Android.Abstractions;
-using Temsa.Worker.DynamicAnalysis.Android.Models;
+using Temsa.Worker.DynamicAnalysis.Android.Models.AndroidDynamicSession;
 using Temsa.Worker.Runtime.Abstractions;
 using Temsa.Worker.Runtime.Execution;
 

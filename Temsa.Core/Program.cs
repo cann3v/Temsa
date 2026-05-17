@@ -92,6 +92,7 @@ builder.Services.AddScoped<ListScanArtifactsHandler>();
 builder.Services.AddScoped<IWorkerControlPublisher, RabbitMqWorkerControlPublisher>();
 builder.Services.AddScoped<CompleteInteractionHandler>();
 builder.Services.AddScoped<GetScanArtifactContentHandler>();
+builder.Services.AddScoped<ScanTaskDispatchMessageFactory>();
 
 builder.Services.AddHostedService<RabbitMqWorkerEventsHostedService>();
 

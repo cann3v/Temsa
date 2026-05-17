@@ -1,6 +1,6 @@
 using Temsa.Contracts.Artifacts;
 
-namespace Temsa.Worker.DynamicAnalysis.Android.Models;
+namespace Temsa.Worker.DynamicAnalysis.Android.Models.AndroidDynamicSession;
 
 public record AndroidDynamicSessionExecutionResult(
     string Status,

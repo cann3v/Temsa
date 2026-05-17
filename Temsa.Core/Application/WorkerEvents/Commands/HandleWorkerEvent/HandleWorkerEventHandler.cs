@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Temsa.Common.Time;
 using Temsa.Contracts.Artifacts;
 using Temsa.Contracts.Messaging.WorkerEvents;
+using Temsa.Core.Application.Scans.Abstractions;
 using Temsa.Core.Application.Scans.Services;
 using Temsa.Core.Domain.Entities;
 using Temsa.Core.Domain.Enums;
@@ -14,6 +15,8 @@ public class HandleWorkerEventHandler(
     TemsaDbContext dbContext,
     IDateTimeProvider dateTimeProvider,
     ScanStatusCalculator scanStatusCalculator,
+    IScanTaskPublisher scanTaskPublisher,
+    ScanTaskDispatchMessageFactory dispatchMessageFactory,
     ILogger<HandleWorkerEventHandler> logger)
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -21,6 +24,8 @@ public class HandleWorkerEventHandler(
     private readonly TemsaDbContext _dbContext = dbContext;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly ScanStatusCalculator _scanStatusCalculator = scanStatusCalculator;
+    private readonly IScanTaskPublisher _scanTaskPublisher = scanTaskPublisher;
+    private readonly ScanTaskDispatchMessageFactory _dispatchMessageFactory = dispatchMessageFactory;
     private readonly ILogger<HandleWorkerEventHandler> _logger = logger;
 
     public async Task<HandleWorkerEventResult> HandleAsync(
@@ -41,6 +46,7 @@ public class HandleWorkerEventHandler(
             .Include(x => x.Tasks)
             .Include(x => x.Events)
             .Include(x => x.Artifacts)
+            .Include(x => x.InputArtifact)
             .FirstOrDefaultAsync(x => x.Id == message.ScanId, cancellationToken);
 
         if (scan is null)
@@ -105,6 +111,11 @@ public class HandleWorkerEventHandler(
             
             default:
                 throw new InvalidOperationException($"Unsupported worker event type '{message.EventType}'");
+        }
+        
+        if (message.EventType == WorkerEventTypes.TaskCompleted)
+        {
+            await QueueNextPendingTaskAsync(scan, scanTask, cancellationToken);
         }
 
         scan.Status = _scanStatusCalculator.Calculate(
@@ -286,4 +297,37 @@ public class HandleWorkerEventHandler(
             });
         }
     }
+    
+    private async Task QueueNextPendingTaskAsync(
+        Scan scan,
+        ScanTask completedTask,
+        CancellationToken cancellationToken)
+    {
+        var nextTask = scan.Tasks
+            .Where(x => x.Status == ScanTaskStatus.Pending)
+            .OrderBy(x => x.Order)
+            .FirstOrDefault();
+
+        if (nextTask is null)
+        {
+            return;
+        }
+
+        var message = _dispatchMessageFactory.Create(scan, nextTask);
+
+        await _scanTaskPublisher.PublishAsync(
+            nextTask.WorkerType,
+            message,
+            cancellationToken);
+
+        nextTask.Status = ScanTaskStatus.Queued;
+        nextTask.UpdatedAt = _dateTimeProvider.UtcNow;
+
+        _logger.LogInformation(
+            "Queued next scan task {NextScanTaskId} after completed task {CompletedScanTaskId} for scan {ScanId}",
+            nextTask.Id,
+            completedTask.Id,
+            scan.Id);
+    }
+
 }

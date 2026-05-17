@@ -1,4 +1,4 @@
-namespace Temsa.Worker.DynamicAnalysis.Android.Models;
+namespace Temsa.Worker.DynamicAnalysis.Android.Models.AndroidDynamicSession;
 
 public record AndroidDynamicSessionPipelineParameters(
     string PackageName,

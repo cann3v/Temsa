@@ -1,4 +1,4 @@
-using Temsa.Worker.DynamicAnalysis.Android.Models;
+using Temsa.Worker.DynamicAnalysis.Android.Models.AndroidDynamicSession;
 using Temsa.Worker.Runtime.Abstractions;
 
 namespace Temsa.Worker.DynamicAnalysis.Android.Abstractions;
