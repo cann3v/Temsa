@@ -15,8 +15,7 @@ public class HandleWorkerEventHandler(
     TemsaDbContext dbContext,
     IDateTimeProvider dateTimeProvider,
     ScanStatusCalculator scanStatusCalculator,
-    IScanTaskPublisher scanTaskPublisher,
-    ScanTaskDispatchMessageFactory dispatchMessageFactory,
+    ScanTaskDispatchOrchestrator dispatchOrchestrator,
     ILogger<HandleWorkerEventHandler> logger)
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -24,8 +23,7 @@ public class HandleWorkerEventHandler(
     private readonly TemsaDbContext _dbContext = dbContext;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly ScanStatusCalculator _scanStatusCalculator = scanStatusCalculator;
-    private readonly IScanTaskPublisher _scanTaskPublisher = scanTaskPublisher;
-    private readonly ScanTaskDispatchMessageFactory _dispatchMessageFactory = dispatchMessageFactory;
+    private readonly ScanTaskDispatchOrchestrator _dispatchOrchestrator = dispatchOrchestrator;
     private readonly ILogger<HandleWorkerEventHandler> _logger = logger;
 
     public async Task<HandleWorkerEventResult> HandleAsync(
@@ -112,10 +110,14 @@ public class HandleWorkerEventHandler(
             default:
                 throw new InvalidOperationException($"Unsupported worker event type '{message.EventType}'");
         }
-        
+
         if (message.EventType == WorkerEventTypes.TaskCompleted)
         {
-            await QueueNextPendingTaskAsync(scan, scanTask, cancellationToken);
+            await _dispatchOrchestrator.QueueNextAfterTaskCompletedAsync(scan, scanTask, cancellationToken);
+        }
+        else if (message.EventType == WorkerEventTypes.TaskFailed)
+        {
+            await _dispatchOrchestrator.QueueNextAfterTaskFailedAsync(scan, scanTask, cancellationToken);
         }
 
         scan.Status = _scanStatusCalculator.Calculate(
@@ -169,7 +171,7 @@ public class HandleWorkerEventHandler(
 
         scan.Status = ScanStatus.Running;
         scan.StartedAt ??= scanTask.StartedAt;
-        scan.CurrentStage = scanTask.TaskType;
+        scan.CurrentStage = scanTask.StageId;
         scan.UpdatedAt = _dateTimeProvider.UtcNow;
     }
 
@@ -219,7 +221,7 @@ public class HandleWorkerEventHandler(
         {
             case ScanStatus.Running:
                 scan.StartedAt ??= _dateTimeProvider.UtcNow;
-                scan.CurrentStage = scanTask.TaskType;
+                scan.CurrentStage = scanTask.StageId;
                 break;
             
             case ScanStatus.Completed:
@@ -297,37 +299,4 @@ public class HandleWorkerEventHandler(
             });
         }
     }
-    
-    private async Task QueueNextPendingTaskAsync(
-        Scan scan,
-        ScanTask completedTask,
-        CancellationToken cancellationToken)
-    {
-        var nextTask = scan.Tasks
-            .Where(x => x.Status == ScanTaskStatus.Pending)
-            .OrderBy(x => x.Order)
-            .FirstOrDefault();
-
-        if (nextTask is null)
-        {
-            return;
-        }
-
-        var message = _dispatchMessageFactory.Create(scan, nextTask);
-
-        await _scanTaskPublisher.PublishAsync(
-            nextTask.WorkerType,
-            message,
-            cancellationToken);
-
-        nextTask.Status = ScanTaskStatus.Queued;
-        nextTask.UpdatedAt = _dateTimeProvider.UtcNow;
-
-        _logger.LogInformation(
-            "Queued next scan task {NextScanTaskId} after completed task {CompletedScanTaskId} for scan {ScanId}",
-            nextTask.Id,
-            completedTask.Id,
-            scan.Id);
-    }
-
 }

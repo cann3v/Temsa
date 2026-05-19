@@ -2,48 +2,71 @@
   "platform": "android",
   "analysisType": "dynamic",
   "parameters": {
-    "packageName": "owasp.sat.agoat",
-    "deviceId": null
+    "packageName": "owasp.sat.agoat"
   },
-  "tasks": [
+  "stages": [
     {
-      "taskType": "android-install-app",
-      "workerType": "android-dynamic-analysis",
-      "tool": "adb",
+      "id": "prepare",
       "order": 1,
-      "parameters": {
-        "reinstall": true
-      }
+      "execution": "sequential",
+      "runPolicy": "on-success",
+      "tasks": [
+        {
+          "taskType": "android-install-app",
+          "workerType": "android-dynamic-analysis",
+          "tool": "adb",
+          "order": 1,
+          "parameters": {
+            "reinstall": true
+          }
+        },
+        {
+          "taskType": "android-clear-app-data",
+          "workerType": "android-dynamic-analysis",
+          "tool": "adb",
+          "order": 2
+        }
+      ]
     },
     {
-      "taskType": "android-clear-app-data",
-      "workerType": "android-dynamic-analysis",
-      "tool": "adb",
-      "order": 2
+      "id": "interactive-analysis",
+      "order": 2,
+      "execution": "parallel",
+      "runPolicy": "on-success",
+      "tasks": [
+        {
+          "taskType": "android-dynamic-session",
+          "workerType": "android-dynamic-analysis",
+          "tool": "frida",
+          "order": 1,
+          "parameters": {
+            "sessionTimeoutSeconds": 30,
+            "scriptProfile": "android-basic",
+            "enabledScripts": [],
+            "disabledScripts": []
+          }
+        }
+      ]
     },
     {
-      "taskType": "android-dynamic-session",
-      "workerType": "android-dynamic-analysis",
-      "tool": "frida",
+      "id": "cleanup",
       "order": 3,
-      "parameters": {
-        "sessionTimeoutSeconds": 10,
-        "scriptProfile": "android-basic",
-        "enabledScripts": [],
-        "disabledScripts": []
-      }
-    },
-    {
-      "taskType": "android-force-stop-app",
-      "workerType": "android-dynamic-analysis",
-      "tool": "adb",
-      "order": 4
-    },
-    {
-      "taskType": "android-uninstall-app",
-      "workerType": "android-dynamic-analysis",
-      "tool": "adb",
-      "order": 5
+      "execution": "sequential",
+      "runPolicy": "always",
+      "tasks": [
+        {
+          "taskType": "android-force-stop-app",
+          "workerType": "android-dynamic-analysis",
+          "tool": "adb",
+          "order": 1
+        },
+        {
+          "taskType": "android-uninstall-app",
+          "workerType": "android-dynamic-analysis",
+          "tool": "adb",
+          "order": 2
+        }
+      ]
     }
   ]
 }

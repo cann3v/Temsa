@@ -58,6 +58,7 @@ public class RabbitMqWorkerEventsOptions
     /// </summary>
     public string QueueName { get; init; } = string.Empty;
     public ushort PrefetchCount { get; init; } = 10;
+    public ushort MaxConcurrentTasks { get; init; } = 1;
 }
 
 public class RabbitMqWorkerControlOptions

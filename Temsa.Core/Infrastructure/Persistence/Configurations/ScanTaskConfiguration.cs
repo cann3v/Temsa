@@ -40,6 +40,25 @@ public class ScanTaskConfiguration : IEntityTypeConfiguration<ScanTask>
                 v => v.ToString().ToLowerInvariant(),
                 v => Enum.Parse<ScanTaskStatus>(v, true))
             .IsRequired();
+        
+        builder.Property(x => x.StageId)
+            .HasColumnName("stage_id")
+            .HasMaxLength(100)
+            .IsRequired();
+
+        builder.Property(x => x.StageOrder)
+            .HasColumnName("stage_order")
+            .IsRequired();
+
+        builder.Property(x => x.StageExecution)
+            .HasColumnName("stage_execution")
+            .HasMaxLength(30)
+            .IsRequired();
+        
+        builder.Property(x => x.RunPolicy)
+            .HasColumnName("run_policy")
+            .HasMaxLength(30)
+            .IsRequired();
 
         builder.Property(x => x.Tool)
             .HasColumnName("tool")
@@ -86,5 +105,7 @@ public class ScanTaskConfiguration : IEntityTypeConfiguration<ScanTask>
         builder.HasIndex(x => new { x.ScanId, x.TaskType });
         builder.HasIndex(x => new { x.WorkerType, x.Status });
         builder.HasIndex(x => new { x.ScanId, x.Order });
+        builder.HasIndex(x => new { x.ScanId, x.StageOrder });
+        builder.HasIndex(x => new { x.ScanId, x.StageId, x.Order });
     }
 }

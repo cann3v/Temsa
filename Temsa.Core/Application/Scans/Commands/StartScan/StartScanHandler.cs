@@ -13,16 +13,14 @@ namespace Temsa.Core.Application.Scans.Commands.StartScan;
 public class StartScanHandler(
     TemsaDbContext dbContext,
     IDateTimeProvider dateTimeProvider,
-    IScanTaskPublisher scanTaskPublisher,
     ScanStatusCalculator scanStatusCalculator,
-    ScanTaskDispatchMessageFactory dispatchMessageFactory,
+    ScanTaskDispatchOrchestrator dispatchOrchestrator,
     ILogger<StartScanHandler> logger)
 {
     private readonly TemsaDbContext _dbContext = dbContext;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
-    private readonly IScanTaskPublisher _scanTaskPublisher = scanTaskPublisher;
     private readonly ScanStatusCalculator _scanStatusCalculator = scanStatusCalculator;
-    private readonly ScanTaskDispatchMessageFactory _dispatchMessageFactory = dispatchMessageFactory;
+    private readonly ScanTaskDispatchOrchestrator _dispatchOrchestrator = dispatchOrchestrator;
     private readonly ILogger<StartScanHandler> _logger = logger;
 
     public async Task<StartScanResult> HandleAsync(
@@ -64,20 +62,24 @@ public class StartScanHandler(
             throw new InvalidOperationException(
                 $"Input artifact with id '{scan.InputArtifactId}' was not found");
         }
-        
-        var firstTask = pendingTasks.First();
-        var message = _dispatchMessageFactory.Create(scan, firstTask);
-        
-        await _scanTaskPublisher.PublishAsync(
-            firstTask.WorkerType,
-            message,
-            cancellationToken);
-        
-        firstTask.Status = ScanTaskStatus.Queued;
-        firstTask.UpdatedAt = _dateTimeProvider.UtcNow;
-        
+
+        var queuedTaskCount = await _dispatchOrchestrator.QueueInitialStageAsync(scan, cancellationToken);
+
+        if (queuedTaskCount == 0)
+        {
+            throw new InvalidOperationException(
+                $"Scan with id '{scan.Id}' does not contain dispatchable pending tasks");
+        }
+
         scan.Status = _scanStatusCalculator.Calculate(scan.Tasks.Select(x => x.Status).ToArray());
-        scan.CurrentStage = firstTask.TaskType;
+
+        var currentStage = scan.Tasks
+            .Where(x => x.Status == ScanTaskStatus.Queued)
+            .OrderBy(x => x.StageOrder)
+            .ThenBy(x => x.Order)
+            .FirstOrDefault();
+
+        scan.CurrentStage = currentStage?.StageId ?? "queued";
         scan.UpdatedAt = _dateTimeProvider.UtcNow;
 
         scan.Events.Add(new ScanEvent
@@ -90,14 +92,14 @@ public class StartScanHandler(
         await _dbContext.SaveChangesAsync(cancellationToken);
         
         _logger.LogInformation(
-            "Scan {ScanId} started successfully. First task {ScanTaskId} queued",
+            "Scan {ScanId} started successfully. {QueuedTaskCount} task(s) queued",
             scan.Id,
-            firstTask.Id);
+            queuedTaskCount);
         
         return new StartScanResult(
             ScanId: scan.Id,
             Status: scan.Status,
-            QueuedTaskCount: 1,
+            QueuedTaskCount: queuedTaskCount,
             UpdatedAt: scan.UpdatedAt);
     }
 }

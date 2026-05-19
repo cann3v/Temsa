@@ -62,19 +62,7 @@ public class JsonScanPipelineProvider(
                 $"Pipeline definition file '{fullPath}' contains mismatched platform/analysisType");
         }
 
-        var tasks = document.Tasks
-            .OrderBy(x => x.Order)
-            .Select(x => new ScanPipelineTaskDefinition
-            {
-                TaskType = RequireValue(x.TaskType, nameof(x.TaskType), fullPath),
-                WorkerType = RequireValue(x.WorkerType, nameof(x.WorkerType), fullPath),
-                Tool = RequireValue(x.Tool, nameof(x.Tool), fullPath),
-                Order = x.Order,
-                ParametersJson = MergeParameters(
-                    document.Parameters,
-                    x.Parameters)
-            })
-            .ToArray();
+        var tasks = BuildTaskDefinitions(document, fullPath);
 
         if (tasks.Length == 0)
         {
@@ -120,60 +108,125 @@ public class JsonScanPipelineProvider(
 
         return value.Trim();
     }
-    
+
     private static string? MergeParameters(
-        JsonElement sharedParameters,
-        JsonElement taskParameters)
+        JsonElement pipelineParameters,
+        JsonElement stageParameters,
+        JsonElement taskParameters,
+        string fullPath)
     {
-        var hasShared = sharedParameters.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null;
-        var hasTask = taskParameters.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null;
-
-        if (!hasShared && !hasTask)
-        {
-            return null;
-        }
-
-        if (!hasShared)
-        {
-            return taskParameters.GetRawText();
-        }
-
-        if (!hasTask)
-        {
-            return sharedParameters.GetRawText();
-        }
-
-        if (sharedParameters.ValueKind != JsonValueKind.Object ||
-            taskParameters.ValueKind != JsonValueKind.Object)
-        {
-            throw new InvalidOperationException(
-                "Pipeline shared parameters and task parameters must be JSON objects");
-        }
-
         var merged = new Dictionary<string, JsonElement>(
             StringComparer.OrdinalIgnoreCase);
 
-        foreach (var property in sharedParameters.EnumerateObject())
-        {
-            merged[property.Name] = property.Value.Clone();
-        }
+        MergeInto(merged, pipelineParameters, fullPath, "pipeline parameters");
+        MergeInto(merged, stageParameters, fullPath, "stage parameters");
+        MergeInto(merged, taskParameters, fullPath, "task parameters");
 
-        foreach (var property in taskParameters.EnumerateObject())
-        {
-            merged[property.Name] = property.Value.Clone();
-        }
-
-        return JsonSerializer.Serialize(
-            merged,
-            JsonSerializerOptions);
+        return merged.Count == 0
+            ? null
+            : JsonSerializer.Serialize(merged, JsonSerializerOptions);
     }
 
+    private static void MergeInto(
+        Dictionary<string, JsonElement> target,
+        JsonElement source,
+        string fullPath,
+        string sourceName)
+    {
+        if (source.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+        {
+            return;
+        }
+
+        if (source.ValueKind != JsonValueKind.Object)
+        {
+            throw new InvalidOperationException(
+                $"Pipeline definition file '{fullPath}' contains non-object {sourceName}");
+        }
+
+        foreach (var property in source.EnumerateObject())
+        {
+            target[property.Name] = property.Value.Clone();
+        }
+    }
+
+    private static ScanPipelineTaskDefinition[] BuildTaskDefinitions(
+        RawPipelineDocument document,
+        string fullPath)
+    {
+        if (document.Stages.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"Pipeline definition file '{fullPath}' does not contain any stages");
+        }
+
+        return BuildStageTaskDefinitions(document, fullPath);
+    }
+
+    private static ScanPipelineTaskDefinition[] BuildStageTaskDefinitions(
+        RawPipelineDocument document,
+        string fullPath)
+    {
+        return document.Stages
+            .OrderBy(x => x.Order)
+            .SelectMany(stage =>
+            {
+                var stageId = RequireValue(stage.Id, nameof(stage.Id), fullPath);
+                var stageExecution = string.IsNullOrWhiteSpace(stage.Execution)
+                    ? "sequential"
+                    : stage.Execution.Trim();
+
+                var runPolicy = string.IsNullOrWhiteSpace(stage.RunPolicy)
+                    ? "on-success"
+                    : stage.RunPolicy.Trim();
+                
+                if (stage.Order <= 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Pipeline definition file '{fullPath}' contains stage '{stageId}' with invalid order");
+                }
+
+                if (stage.Tasks.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Pipeline definition file '{fullPath}' contains stage '{stageId}' without tasks");
+                }
+                
+                if (!string.Equals(stageExecution, "sequential", StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(stageExecution, "parallel", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(
+                        $"Pipeline definition file '{fullPath}' contains stage '{stageId}' " +
+                        $"with invalid execution '{stageExecution}'");
+                }
+
+                return stage.Tasks
+                    .OrderBy(task => task.Order)
+                    .Select(task => new ScanPipelineTaskDefinition
+                    {
+                        StageId = stageId,
+                        StageOrder = stage.Order,
+                        StageExecution = stageExecution,
+                        RunPolicy = runPolicy,
+                        TaskType = RequireValue(task.TaskType, nameof(task.TaskType), fullPath),
+                        WorkerType = RequireValue(task.WorkerType, nameof(task.WorkerType), fullPath),
+                        Tool = RequireValue(task.Tool, nameof(task.Tool), fullPath),
+                        Order = task.Order,
+                        ParametersJson = MergeParameters(
+                            document.Parameters,
+                            stage.Parameters,
+                            task.Parameters,
+                            fullPath)
+                    });
+            })
+            .ToArray();
+    }
 
     private class RawPipelineDocument
     {
         public string? Platform { get; init; }
         public string? AnalysisType { get; init; }
-        public List<RawPipelineTaskDocument> Tasks { get; init; } = [];
+        public List<RawPipelineStageDocument> Stages { get; init; } = [];
         public JsonElement Parameters { get; init; }
     }
 
@@ -184,5 +237,15 @@ public class JsonScanPipelineProvider(
         public string? Tool { get; init; }
         public int Order { get; init; }
         public JsonElement Parameters { get; init; }
+    }
+    
+    private class RawPipelineStageDocument
+    {
+        public string? Id { get; init; }
+        public int Order { get; init; }
+        public string? Execution { get; init; }
+        public string? RunPolicy { get; init; }
+        public JsonElement Parameters { get; init; }
+        public List<RawPipelineTaskDocument> Tasks { get; init; } = [];
     }
 }

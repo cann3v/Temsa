@@ -82,6 +82,10 @@ public class CreateScanHandler(
             {
                 TaskType = taskDefinition.TaskType,
                 WorkerType = taskDefinition.WorkerType,
+                StageId = taskDefinition.StageId,
+                StageOrder = taskDefinition.StageOrder,
+                StageExecution = taskDefinition.StageExecution,
+                RunPolicy = taskDefinition.RunPolicy,
                 Tool = taskDefinition.Tool,
                 Order = taskDefinition.Order,
                 Status = ScanTaskStatus.Pending,

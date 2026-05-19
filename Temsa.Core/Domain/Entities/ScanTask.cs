@@ -12,6 +12,11 @@ public class ScanTask
     public string WorkerType { get; set; } = string.Empty;
     public ScanTaskStatus Status { get; set; }
 
+    public string StageId { get; set; } = "default";
+    public int StageOrder { get; set; }
+    public string StageExecution { get; set; } = "sequential";
+    public string RunPolicy { get; set; } = "on-success";
+
     public string Tool { get; set; } = string.Empty;
     public int Attempt { get; set; }
     public string? PayloadJson { get; set; }

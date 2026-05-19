@@ -1,15 +1,21 @@
 {
-  "platform": "android",
+  "platform": "ios",
   "analysisType": "static",
-  "tasks": [
+  "stages": [
     {
-      "taskType": "binary-analysis",
-      "workerType": "static-analysis",
-      "tool": "radare2",
+      "id": "static-analysis",
       "order": 1,
-      "parameters": {
-        "ruleset": "full"
-      }
+      "execution": "sequential",
+      "runPolicy": "on-success",
+      "tasks": [
+        {
+          "taskType": "ios-static-placeholder",
+          "workerType": "static-analysis",
+          "tool": "placeholder",
+          "order": 1,
+          "parameters": {}
+        }
+      ]
     }
   ]
 }

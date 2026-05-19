@@ -176,6 +176,8 @@ namespace Temsa.Core.Migrations
 
                     b.HasIndex("CreatedAt");
 
+                    b.HasIndex("InputArtifactId");
+
                     b.HasIndex("ProjectId");
 
                     b.HasIndex("Status");
@@ -325,9 +327,31 @@ namespace Temsa.Core.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("result_json");
 
+                    b.Property<string>("RunPolicy")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("run_policy");
+
                     b.Property<long>("ScanId")
                         .HasColumnType("bigint")
                         .HasColumnName("scan_id");
+
+                    b.Property<string>("StageExecution")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("stage_execution");
+
+                    b.Property<string>("StageId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("stage_id");
+
+                    b.Property<int>("StageOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("stage_order");
 
                     b.Property<DateTimeOffset?>("StartedAt")
                         .HasColumnType("timestamp with time zone")
@@ -368,9 +392,13 @@ namespace Temsa.Core.Migrations
 
                     b.HasIndex("ScanId", "Order");
 
+                    b.HasIndex("ScanId", "StageOrder");
+
                     b.HasIndex("ScanId", "TaskType");
 
                     b.HasIndex("WorkerType", "Status");
+
+                    b.HasIndex("ScanId", "StageId", "Order");
 
                     b.ToTable("scan_tasks", (string)null);
                 });
@@ -388,11 +416,19 @@ namespace Temsa.Core.Migrations
 
             modelBuilder.Entity("Temsa.Core.Domain.Entities.Scan", b =>
                 {
+                    b.HasOne("Temsa.Core.Domain.Entities.ProjectArtifact", "InputArtifact")
+                        .WithMany()
+                        .HasForeignKey("InputArtifactId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Temsa.Core.Domain.Entities.Project", "Project")
                         .WithMany("Scans")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("InputArtifact");
 
                     b.Navigation("Project");
                 });
