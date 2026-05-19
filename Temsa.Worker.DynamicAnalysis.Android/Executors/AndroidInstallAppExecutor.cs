@@ -2,6 +2,7 @@ using Temsa.Common.Storage;
 using Temsa.Worker.DynamicAnalysis.Android.Abstractions;
 using Temsa.Worker.DynamicAnalysis.Android.Models;
 using Temsa.Worker.DynamicAnalysis.Android.Models.AndroidInstallApp;
+using Temsa.Worker.DynamicAnalysis.Runtime.Devices;
 using Temsa.Worker.Runtime.Abstractions;
 
 namespace Temsa.Worker.DynamicAnalysis.Android.Executors;
@@ -9,10 +10,12 @@ namespace Temsa.Worker.DynamicAnalysis.Android.Executors;
 public class AndroidInstallAppExecutor(
     IArtifactStorage artifactStorage,
     IAndroidDeviceController deviceController,
+    IWorkerDeviceContext deviceContext,
     ILogger<AndroidInstallAppExecutor> logger) : IAndroidInstallAppExecutor
 {
     private readonly IArtifactStorage _artifactStorage = artifactStorage;
     private readonly IAndroidDeviceController _deviceController = deviceController;
+    private readonly IWorkerDeviceContext _deviceContext = deviceContext;
     private readonly ILogger<AndroidInstallAppExecutor> _logger = logger;
 
     public async Task<AndroidDeviceOperationResult> ExecuteAsync(
@@ -51,7 +54,7 @@ public class AndroidInstallAppExecutor(
 
             await _deviceController.InstallAsync(
                 apkPath,
-                parameters.DeviceId,
+                _deviceContext.DeviceId,
                 parameters.Reinstall,
                 cancellationToken);
 
@@ -64,13 +67,13 @@ public class AndroidInstallAppExecutor(
             _logger.LogInformation(
                 "Android APK installed. FileName={FileName}, DeviceId={DeviceId}, Reinstall={Reinstall}",
                 parameters.InputArtifact.FileName,
-                parameters.DeviceId,
+                _deviceContext.DeviceId,
                 parameters.Reinstall);
 
             return new AndroidDeviceOperationResult(
                 Status: "completed",
                 Operation: "android-install-app",
-                DeviceId: parameters.DeviceId);
+                DeviceId: _deviceContext.DeviceId);
         }
         finally
         {

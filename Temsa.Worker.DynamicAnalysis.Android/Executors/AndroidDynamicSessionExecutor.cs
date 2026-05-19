@@ -5,6 +5,7 @@ using Temsa.Common.Time;
 using Temsa.Contracts.Artifacts;
 using Temsa.Worker.DynamicAnalysis.Android.Abstractions;
 using Temsa.Worker.DynamicAnalysis.Android.Models.AndroidDynamicSession;
+using Temsa.Worker.DynamicAnalysis.Runtime.Devices;
 using Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings;
 using Temsa.Worker.DynamicAnalysis.Runtime.Scripts;
 using Temsa.Worker.Runtime.Abstractions;
@@ -16,6 +17,7 @@ public class AndroidDynamicSessionExecutor(
     IFridaScriptProvider scriptProvider,
     IFridaClient fridaClient,
     IDateTimeProvider dateTimeProvider,
+    IWorkerDeviceContext deviceContext,
     ILogger<AndroidDynamicSessionExecutor> logger) : IAndroidDynamicSessionExecutor
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -24,6 +26,7 @@ public class AndroidDynamicSessionExecutor(
     private readonly IFridaScriptProvider _scriptProvider = scriptProvider;
     private readonly IFridaClient _fridaClient = fridaClient;
     private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
+    private readonly IWorkerDeviceContext  _deviceContext = deviceContext;
     private readonly ILogger<AndroidDynamicSessionExecutor> _logger = logger;
 
     public async Task<AndroidDynamicSessionExecutionResult> ExecuteAsync(
@@ -63,7 +66,7 @@ public class AndroidDynamicSessionExecutor(
             await using var fridaSession = await _fridaClient.SpawnAsync(
                 new FridaSpawnOptions(
                     TargetIdentifier: parameters.PackageName,
-                    DeviceId: parameters.DeviceId,
+                    DeviceId: _deviceContext.DeviceId,
                     Scripts: fridaScripts),
                 cancellationToken);
 

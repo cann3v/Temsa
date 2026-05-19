@@ -29,7 +29,6 @@ public class AndroidDynamicSessionTaskHandler(
         var parameters = new AndroidDynamicSessionTaskParameters(
             InputArtifact: context.Task.InputArtifact,
             PackageName: pipelineParameters.PackageName,
-            DeviceId: pipelineParameters.DeviceId,
             SessionTimeoutSeconds: pipelineParameters.SessionTimeoutSeconds,
             ScriptProfile: pipelineParameters.ScriptProfile,
             EnabledScripts: pipelineParameters.EnabledScripts ?? [],

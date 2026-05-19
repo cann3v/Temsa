@@ -28,7 +28,6 @@ public class AndroidInstallAppTaskHandler(
 
         var parameters = new AndroidInstallAppTaskParameters(
             InputArtifact: context.Task.InputArtifact,
-            DeviceId: pipelineParameters.DeviceId,
             Reinstall: pipelineParameters.Reinstall);
         
         _logger.LogInformation(
@@ -52,7 +51,6 @@ public class AndroidInstallAppTaskHandler(
         if (string.IsNullOrWhiteSpace(parametersJson))
         {
             return new AndroidInstallAppPipelineParameters(
-                DeviceId: null,
                 Reinstall: true);
         }
 

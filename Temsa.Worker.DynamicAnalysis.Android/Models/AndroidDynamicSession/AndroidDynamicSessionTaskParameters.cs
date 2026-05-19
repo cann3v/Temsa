@@ -5,7 +5,6 @@ namespace Temsa.Worker.DynamicAnalysis.Android.Models.AndroidDynamicSession;
 public record AndroidDynamicSessionTaskParameters(
     ProjectArtifactDescriptor InputArtifact,
     string PackageName,
-    string? DeviceId,
     int SessionTimeoutSeconds,
     string ScriptProfile,
     IReadOnlyCollection<string> EnabledScripts,

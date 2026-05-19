@@ -1,15 +1,18 @@
 using Temsa.Worker.DynamicAnalysis.Android.Abstractions;
 using Temsa.Worker.DynamicAnalysis.Android.Models;
 using Temsa.Worker.DynamicAnalysis.Android.Models.AndroidForceStopApp;
+using Temsa.Worker.DynamicAnalysis.Runtime.Devices;
 using Temsa.Worker.Runtime.Abstractions;
 
 namespace Temsa.Worker.DynamicAnalysis.Android.Executors;
 
 public class AndroidForceStopAppExecutor(
     IAndroidDeviceController deviceController,
+    IWorkerDeviceContext deviceContext,
     ILogger<AndroidForceStopAppExecutor> logger) : IAndroidForceStopAppExecutor
 {
     private readonly IAndroidDeviceController _deviceController = deviceController;
+    private readonly IWorkerDeviceContext _deviceContext = deviceContext;
     private readonly ILogger<AndroidForceStopAppExecutor> _logger = logger;
 
     public async Task<AndroidDeviceOperationResult> ExecuteAsync(
@@ -25,7 +28,7 @@ public class AndroidForceStopAppExecutor(
 
         await _deviceController.ForceStopAsync(
             parameters.PackageName,
-            parameters.DeviceId,
+            _deviceContext.DeviceId,
             cancellationToken);
 
         await events.ReportProgressAsync(
@@ -37,12 +40,12 @@ public class AndroidForceStopAppExecutor(
         _logger.LogInformation(
             "Android application force-stopped. PackageName={PackageName}, DeviceId={DeviceId}",
             parameters.PackageName,
-            parameters.DeviceId);
+            _deviceContext.DeviceId);
 
         return new AndroidDeviceOperationResult(
             Status: "completed",
             Operation: "android-force-stop-app",
             PackageName: parameters.PackageName,
-            DeviceId: parameters.DeviceId);
+            DeviceId: _deviceContext.DeviceId);
     }
 }
