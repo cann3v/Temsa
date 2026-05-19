@@ -51,6 +51,7 @@ public class CompleteInteractionHandler(
             ScanId: command.ScanId,
             ScanTaskId: command.ScanTaskId,
             CommandType: WorkerControlCommandTypes.InteractionCompleted,
+            Reason: "Interaction completed by user",
             OccuredAt: _dateTimeProvider.UtcNow);
         
         await _publisher.PublishAsync(

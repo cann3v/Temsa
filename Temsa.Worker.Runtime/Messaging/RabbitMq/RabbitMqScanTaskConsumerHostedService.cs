@@ -8,6 +8,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Temsa.Common.Configuration;
 using Temsa.Common.RabbitMq;
+using Temsa.Common.Time;
 using Temsa.Contracts.Messaging.ScanTasks;
 using Temsa.Contracts.Messaging.WorkerEvents;
 using Temsa.Worker.Runtime.Abstractions;
@@ -20,6 +21,8 @@ public class RabbitMqScanTaskConsumerHostedService(
     IOptions<RabbitMqWorkerEventsOptions> options,
     IServiceScopeFactory scopeFactory,
     IWorkerIdentityProvider identityProvider,
+    IRunningWorkerTaskRegistry runningTaskRegistry,
+    IDateTimeProvider dateTimeProvider,
     ILogger<RabbitMqScanTaskConsumerHostedService> logger) : BackgroundService
 {
     private static readonly JsonSerializerOptions JsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -28,7 +31,13 @@ public class RabbitMqScanTaskConsumerHostedService(
     private readonly RabbitMqWorkerEventsOptions _options = options.Value;
     private readonly IServiceScopeFactory _scopeFactory = scopeFactory;
     private readonly IWorkerIdentityProvider _identityProvider = identityProvider;
+    private readonly IRunningWorkerTaskRegistry _runningTaskRegistry = runningTaskRegistry;
+    private readonly IDateTimeProvider _dateTimeProvider = dateTimeProvider;
     private readonly ILogger<RabbitMqScanTaskConsumerHostedService> _logger = logger;
+    
+    private readonly SemaphoreSlim _concurrencyLimiter = 
+        new(Math.Max((ushort)1, options.Value.MaxConcurrentTasks));
+    private readonly SemaphoreSlim _channelOperationLock = new(1, 1);
     
     private IChannel? _channel;
 
@@ -42,15 +51,18 @@ public class RabbitMqScanTaskConsumerHostedService(
 
         await _channel.BasicQosAsync(
             prefetchSize: 0,
-            prefetchCount: _options.PrefetchCount,
+            prefetchCount: Math.Max((ushort)1, _options.PrefetchCount),
             global: false,
             cancellationToken: stoppingToken);
 
         var consumer = new AsyncEventingBasicConsumer(_channel);
 
-        consumer.ReceivedAsync += async (_, args) =>
+        consumer.ReceivedAsync += (_, args) =>
         {
-            await HandleMessageAsync(args, stoppingToken);
+            _ = Task.Run(
+                () => HandleMessageWithConcurrencyAsync(args, stoppingToken),
+                stoppingToken);
+            return Task.CompletedTask;
         };
 
         await _channel.BasicConsumeAsync(
@@ -126,11 +138,22 @@ public class RabbitMqScanTaskConsumerHostedService(
 
             await AckAsync(args.DeliveryTag, cancellationToken);
 
+            var stopHandle = new WorkerTaskStopHandle();
+            
+            _runningTaskRegistry.Register(new RunningWorkerTask(
+                ScanId: task.ScanId,
+                ScanTaskId: task.ScanTaskId,
+                TaskType: task.TaskType,
+                WorkerId: _identityProvider.WorkerId,
+                StopHandle: stopHandle,
+                StartedAt: _dateTimeProvider.UtcNow));
+
             var context = new WorkerTaskContext
             {
                 Task = task,
                 WorkerId = _identityProvider.WorkerId,
-                Events = eventPublisher
+                Events = eventPublisher,
+                StopHandle = stopHandle
             };
 
             try
@@ -174,6 +197,10 @@ public class RabbitMqScanTaskConsumerHostedService(
                     errorMessage: ex.Message,
                     log: ex.ToString(),
                     cancellationToken: cancellationToken);
+            }
+            finally
+            {
+                _runningTaskRegistry.Unregister(task.ScanTaskId);
             }
         }
         catch (JsonException ex)
@@ -222,11 +249,21 @@ public class RabbitMqScanTaskConsumerHostedService(
         ulong deliveryTag,
         CancellationToken cancellationToken)
     {
-        await _channel!.BasicAckAsync(
-            deliveryTag: deliveryTag,
-            multiple: false,
-            cancellationToken: cancellationToken);
+        await _channelOperationLock.WaitAsync(cancellationToken);
+
+        try
+        {
+            await _channel!.BasicAckAsync(
+                deliveryTag: deliveryTag,
+                multiple: false,
+                cancellationToken: cancellationToken);
+        }
+        finally
+        {
+            _channelOperationLock.Release();
+        }
     }
+
 
     private async Task SafeNackAsync(
         ulong deliveryTag,
@@ -237,6 +274,8 @@ public class RabbitMqScanTaskConsumerHostedService(
         {
             return;
         }
+
+        await _channelOperationLock.WaitAsync(cancellationToken);
 
         try
         {
@@ -253,5 +292,44 @@ public class RabbitMqScanTaskConsumerHostedService(
                 "Failed to nack scan task message with delivery tag '{DeliveryTag}'",
                 deliveryTag);
         }
+        finally
+        {
+            _channelOperationLock.Release();
+        }
     }
+
+    
+    private async Task HandleMessageWithConcurrencyAsync(
+        BasicDeliverEventArgs args,
+        CancellationToken cancellationToken)
+    {
+        await _concurrencyLimiter.WaitAsync(cancellationToken);
+
+        try
+        {
+            await HandleMessageAsync(args, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogWarning(
+                "Scan task message handling was cancelled due to worker shutdown");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Unexpected error while handling scan task message with delivery tag {DeliveryTag}",
+                args.DeliveryTag);
+
+            await SafeNackAsync(
+                args.DeliveryTag,
+                requeue: true,
+                cancellationToken);
+        }
+        finally
+        {
+            _concurrencyLimiter.Release();
+        }
+    }
+
 }

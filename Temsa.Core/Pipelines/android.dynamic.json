@@ -40,7 +40,7 @@
           "tool": "frida",
           "order": 1,
           "parameters": {
-            "sessionTimeoutSeconds": 30,
+            "sessionTimeoutSeconds": 600,
             "scriptProfile": "android-basic",
             "enabledScripts": [],
             "disabledScripts": []

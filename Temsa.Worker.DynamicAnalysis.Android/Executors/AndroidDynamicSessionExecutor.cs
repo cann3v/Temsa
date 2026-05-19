@@ -9,6 +9,7 @@ using Temsa.Worker.DynamicAnalysis.Runtime.Devices;
 using Temsa.Worker.DynamicAnalysis.Runtime.FridaBindings;
 using Temsa.Worker.DynamicAnalysis.Runtime.Scripts;
 using Temsa.Worker.Runtime.Abstractions;
+using Temsa.Worker.Runtime.Execution;
 
 namespace Temsa.Worker.DynamicAnalysis.Android.Executors;
 
@@ -31,9 +32,11 @@ public class AndroidDynamicSessionExecutor(
 
     public async Task<AndroidDynamicSessionExecutionResult> ExecuteAsync(
         AndroidDynamicSessionTaskParameters parameters,
-        IWorkerTaskEventSink events,
+        WorkerTaskExecutionControl control,
         CancellationToken cancellationToken = default)
     {
+        var events = control.Events;
+        
         await events.ReportProgressAsync(
             phase: "preparing",
             message: "Preparing Android dynamic analysis session",
@@ -81,7 +84,7 @@ public class AndroidDynamicSessionExecutor(
                 fridaSession,
                 logPath,
                 timeout,
-                events,
+                control,
                 cancellationToken);
 
             await fridaSession.DetachAsync(cancellationToken);
@@ -158,49 +161,86 @@ public class AndroidDynamicSessionExecutor(
         IFridaSession fridaSession,
         string logPath,
         TimeSpan timeout,
-        IWorkerTaskEventSink events,
+        WorkerTaskExecutionControl control,
         CancellationToken cancellationToken)
     {
-        using var timeoutCts = new CancellationTokenSource(timeout);
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken,
-            timeoutCts.Token);
-
-        var count = 0;
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         await using var writer = new StreamWriter(
             path: logPath,
             append: false,
             encoding: new UTF8Encoding(false));
 
-        try
+        var readTask = ReadFridaMessagesAsync(
+            fridaSession,
+            writer,
+            control.Events,
+            linkedCts.Token);
+
+        var stopTask = control.StopHandle.WaitForStopAsync(cancellationToken);
+        var timeoutTask = Task.Delay(timeout, cancellationToken);
+
+        var completedTask = await Task.WhenAny(readTask, stopTask, timeoutTask);
+
+        if (completedTask == stopTask)
         {
-            await foreach (var message in fridaSession.ReadMessagesAsync(linkedCts.Token))
-            {
-                count++;
+            await linkedCts.CancelAsync();
 
-                var record = CreateFridaLogRecord(message);
-                var json = JsonSerializer.Serialize(record, JsonSerializerOptions);
-                
-                await writer.WriteLineAsync(json);
-                await writer.FlushAsync(linkedCts.Token);
-
-                if (count <= 5 || count % 10 == 0)
-                {
-                    await events.ReportLogAsync(
-                        message: $"Frida message received: {message.ScriptId}",
-                        level: nameof(LogLevel.Information),
-                        linkedCts.Token);
-                }
-            }
+            await control.Events.ReportProgressAsync(
+                phase: "interaction_completed",
+                message: "Android dynamic session stop signal received",
+                percent: 80,
+                cancellationToken);
         }
-        catch (OperationCanceledException) when (timeoutCts.IsCancellationRequested)
+        else if (completedTask == timeoutTask)
         {
-            await events.ReportProgressAsync(
+            await linkedCts.CancelAsync();
+
+            await control.Events.ReportProgressAsync(
                 phase: "session_timeout",
                 message: "Android dynamic session timeout reached",
                 percent: 80,
                 cancellationToken);
+        }
+
+        try
+        {
+            return await readTask;
+        }
+        catch (OperationCanceledException) when (
+            cancellationToken.IsCancellationRequested ||
+            control.StopHandle.IsStopRequested ||
+            completedTask == timeoutTask)
+        {
+            return readTask.IsCompletedSuccessfully ? readTask.Result : 0;
+        }
+    }
+    
+    private async Task<int> ReadFridaMessagesAsync(
+        IFridaSession fridaSession,
+        StreamWriter writer,
+        IWorkerTaskEventSink events,
+        CancellationToken cancellationToken)
+    {
+        var count = 0;
+
+        await foreach (var message in fridaSession.ReadMessagesAsync(cancellationToken))
+        {
+            count++;
+
+            var record = CreateFridaLogRecord(message);
+            var json = JsonSerializer.Serialize(record, JsonSerializerOptions);
+
+            await writer.WriteLineAsync(json);
+            await writer.FlushAsync(cancellationToken);
+
+            if (count <= 5 || count % 10 == 0)
+            {
+                await events.ReportLogAsync(
+                    message: $"Frida message received: {message.ScriptId}",
+                    level: nameof(LogLevel.Information),
+                    cancellationToken);
+            }
         }
 
         return count;

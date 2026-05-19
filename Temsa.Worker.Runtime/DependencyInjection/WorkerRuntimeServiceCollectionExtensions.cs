@@ -36,6 +36,15 @@ public static class WorkerRuntimeServiceCollectionExtensions
                     options.PrefetchCount > 0,
                 "RabbitMQ worker messaging configuration is invalid")
             .ValidateOnStart();
+        
+        services.AddOptions<RabbitMqWorkerControlOptions>()
+            .Bind(configuration.GetSection($"{RabbitMqWorkerOptions.SectionName}:Control"))
+            .Validate(options =>
+                    !string.IsNullOrWhiteSpace(options.WorkerControlExchange) &&
+                    !string.IsNullOrWhiteSpace(options.QueueName) &&
+                    !string.IsNullOrWhiteSpace(options.RoutingKey),
+                "RabbitMQ worker control configuration is invalid")
+            .ValidateOnStart();
 
         services.AddOptions<ArtifactStorageOptions>()
             .Bind(configuration.GetSection(ArtifactStorageOptions.SectionName))
@@ -72,7 +81,9 @@ public static class WorkerRuntimeServiceCollectionExtensions
         services.AddSingleton<IWorkerTaskEventSinkFactory, WorkerTaskEventSinkFactory>();
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
         services.AddSingleton<IArtifactStorage, S3ArtifactStorage>();
+        services.AddSingleton<IRunningWorkerTaskRegistry, RunningWorkerTaskRegistry>();
         services.AddHostedService<RabbitMqScanTaskConsumerHostedService>();
+        services.AddHostedService<RabbitMqWorkerControlConsumerHostedService>();
 
         return services;
     }

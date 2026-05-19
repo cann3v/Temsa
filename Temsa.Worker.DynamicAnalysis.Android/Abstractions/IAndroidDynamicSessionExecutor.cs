@@ -1,5 +1,6 @@
 using Temsa.Worker.DynamicAnalysis.Android.Models.AndroidDynamicSession;
 using Temsa.Worker.Runtime.Abstractions;
+using Temsa.Worker.Runtime.Execution;
 
 namespace Temsa.Worker.DynamicAnalysis.Android.Abstractions;
 
@@ -7,6 +8,6 @@ public interface IAndroidDynamicSessionExecutor
 {
     Task<AndroidDynamicSessionExecutionResult> ExecuteAsync(
         AndroidDynamicSessionTaskParameters parameters,
-        IWorkerTaskEventSink events,
+        WorkerTaskExecutionControl control,
         CancellationToken cancellationToken = default);
 }

@@ -16,6 +16,7 @@ public class RabbitMqWorkerOptions
     
     public RabbitMqConnectionOptions Connection { get; init; } = new();
     public RabbitMqWorkerEventsOptions Messaging { get; init; } = new RabbitMqWorkerEventsOptions{PrefetchCount = 1};
+    public RabbitMqWorkerControlOptions Control { get; init; } = new();
 }
 
 public class RabbitMqConnectionOptions
@@ -67,4 +68,6 @@ public class RabbitMqWorkerControlOptions
     /// Обменник для команд управления воркером
     /// </summary>
     public string WorkerControlExchange { get; init; } = string.Empty;
+    public string QueueName { get; init; } = string.Empty;
+    public string RoutingKey { get; init; } = string.Empty;
 }

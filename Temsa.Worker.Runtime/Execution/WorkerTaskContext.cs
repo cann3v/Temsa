@@ -9,4 +9,5 @@ public class WorkerTaskContext
     public required ScanTaskDispatchMessage Task { get; init; }
     public required string WorkerId { get; init; }
     public required IWorkerEventPublisher Events { get; init; }
+    public required IWorkerTaskStopHandle StopHandle { get; init; }
 }

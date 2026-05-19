@@ -38,10 +38,14 @@ public class AndroidDynamicSessionTaskHandler(
             "Executing Android dynamic session task {ScanTaskId} for package {PackageName}",
             context.Task.ScanTaskId,
             parameters.PackageName);
+        
+        var control = new WorkerTaskExecutionControl(
+            Events: _eventSinkFactory.Create(context),
+            StopHandle: context.StopHandle);
 
         var result = await _executor.ExecuteAsync(
             parameters,
-            _eventSinkFactory.Create(context),
+            control,
             cancellationToken);
 
         return new WorkerTaskExecutionResult(
