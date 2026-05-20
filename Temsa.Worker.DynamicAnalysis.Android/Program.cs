@@ -21,6 +21,7 @@ builder.Services.AddSingleton<IWorkerTaskHandler, AndroidClearAppDataTaskHandler
 builder.Services.AddSingleton<IWorkerTaskHandler, AndroidUninstallAppTaskHandler>();
 builder.Services.AddSingleton<IWorkerTaskHandler, AndroidForceStopAppTaskHandler>();
 builder.Services.AddSingleton<IWorkerTaskHandler, AndroidLogcatCaptureTaskHandler>();
+builder.Services.AddSingleton<IWorkerTaskHandler, AndroidPrivateDataDumpTaskHandler>();
 
 builder.Services.AddSingleton<IAndroidDynamicSessionExecutor, AndroidDynamicSessionExecutor>();
 builder.Services.AddSingleton<IAndroidInstallAppExecutor, AndroidInstallAppExecutor>();
@@ -28,7 +29,7 @@ builder.Services.AddSingleton<IAndroidClearAppDataExecutor, AndroidClearAppDataE
 builder.Services.AddSingleton<IAndroidUninstallAppExecutor, AndroidUninstallAppExecutor>();
 builder.Services.AddSingleton<IAndroidForceStopAppExecutor, AndroidForceStopAppExecutor>();
 builder.Services.AddSingleton<IAndroidLogcatCaptureExecutor, AndroidLogcatCaptureExecutor>();
-
+builder.Services.AddSingleton<IAndroidPrivateDataDumpExecutor, AndroidPrivateDataDumpExecutor>();
 
 var host = builder.Build();
 await host.RunAsync();

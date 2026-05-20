@@ -33,4 +33,11 @@ public interface IAndroidDeviceController
         string? deviceId,
         Func<string, CancellationToken, Task> onLine,
         CancellationToken cancellationToken = default);
+    
+    Task DumpPrivateDataAsync(
+        string packageName,
+        string? deviceId,
+        string destinationArchivePath,
+        bool includeCache,
+        CancellationToken cancellationToken = default);
 }

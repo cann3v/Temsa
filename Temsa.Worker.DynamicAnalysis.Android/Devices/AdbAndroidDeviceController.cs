@@ -177,6 +177,102 @@ public class AdbAndroidDeviceController(
             receiver,
             cancellationToken);
     }
+    
+    public async Task DumpPrivateDataAsync(
+        string packageName,
+        string? deviceId,
+        string destinationArchivePath,
+        bool includeCache,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(destinationArchivePath);
+
+        var device = await ResolveDeviceAsync(deviceId, cancellationToken);
+
+        var remoteArchivePath = $"/data/local/tmp/temsa-private-data-{Guid.NewGuid():N}.tar";
+        var excludes = includeCache
+            ? string.Empty
+            : "--exclude=cache --exclude=code_cache";
+
+        var archiveCommand =
+            $"su -c 'tar -cf {remoteArchivePath} -C /data/user/0 {excludes} {packageName}'";
+
+        try
+        {
+            _logger.LogInformation(
+                "Creating private data archive for package {PackageName} on Android device {DeviceSerial}",
+                packageName,
+                device.Serial);
+
+            var output = await ExecuteShellCommandAsync(
+                device,
+                archiveCommand,
+                cancellationToken);
+
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                _logger.LogDebug(
+                    "Private data archive command output for package {PackageName}: {Output}",
+                    packageName,
+                    output);
+            }
+            
+            var remoteSizeOutput = await ExecuteShellCommandAsync(
+                device,
+                $"su -c 'stat -c %s {remoteArchivePath}'",
+                cancellationToken);
+
+            if (!long.TryParse(remoteSizeOutput.Trim(), out var remoteSizeBytes) ||
+                remoteSizeBytes <= 0)
+            {
+                throw new InvalidOperationException(
+                    $"Private data archive was created empty or size could not be detected. " +
+                    $"PackageName='{packageName}', RemoteArchivePath='{remoteArchivePath}', StatOutput='{remoteSizeOutput}'");
+            }
+
+            await using var destinationStream = File.Create(destinationArchivePath);
+            
+            await _adbClient.PullAsync(
+                device,
+                remoteArchivePath,
+                destinationStream,
+                progress: null,
+                useV2: false,
+                cancellationToken);
+            
+            var localFile = new FileInfo(destinationArchivePath);
+
+            if (!localFile.Exists || localFile.Length <= 0)
+            {
+                throw new InvalidOperationException(
+                    $"Private data archive was pulled empty. PackageName='{packageName}', " +
+                    $"RemoteArchivePath='{remoteArchivePath}', DestinationArchivePath='{destinationArchivePath}'");
+            }
+
+            _logger.LogInformation(
+                "Private data archive for package {PackageName} pulled to {DestinationArchivePath}",
+                packageName,
+                destinationArchivePath);
+        }
+        finally
+        {
+            try
+            {
+                await ExecuteShellCommandAsync(
+                    device,
+                    $"su -c 'rm -f {remoteArchivePath}'",
+                    CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(
+                    ex,
+                    "Failed to remove remote private data archive {RemoteArchivePath}",
+                    remoteArchivePath);
+            }
+        }
+    }
 
     private async Task<DeviceData> ResolveDeviceAsync(
         string? deviceId,

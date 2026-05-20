@@ -60,10 +60,10 @@
       ]
     },
     {
-      "id": "cleanup",
+      "id": "post-analysis",
       "order": 3,
       "execution": "sequential",
-      "runPolicy": "always",
+      "runPolicy": "on-success",
       "tasks": [
         {
           "taskType": "android-force-stop-app",
@@ -72,10 +72,27 @@
           "order": 1
         },
         {
+          "taskType": "android-private-data-dump",
+          "workerType": "android-dynamic-analysis",
+          "tool": "adb-root",
+          "order": 2,
+          "parameters": {
+            "includeCache": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "cleanup",
+      "order": 4,
+      "execution": "sequential",
+      "runPolicy": "always",
+      "tasks": [
+        {
           "taskType": "android-uninstall-app",
           "workerType": "android-dynamic-analysis",
           "tool": "adb",
-          "order": 2
+          "order": 1
         }
       ]
     }
