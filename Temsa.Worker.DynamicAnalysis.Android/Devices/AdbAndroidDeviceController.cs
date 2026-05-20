@@ -129,6 +129,55 @@ public class AdbAndroidDeviceController(
             device.Serial);
     }
 
+    public async Task<IReadOnlyCollection<int>> GetProcessIdsAsync(
+        string packageName,
+        string? deviceId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(packageName);
+
+        var device = await ResolveDeviceAsync(deviceId, cancellationToken);
+
+        // TODO sanitize packageName
+        var output = await ExecuteShellCommandAsync(
+            device,
+            $"pidof {packageName}",
+            cancellationToken);
+
+        var processIds = output
+            .Split([' ', '\r', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(x => int.TryParse(x, out var pid) ? pid : (int?)null)
+            .Where(x => x is not null)
+            .Select(x => x!.Value)
+            .Distinct()
+            .ToArray();
+
+        return processIds;
+    }
+
+    public async Task CaptureLogcatAsync(
+        int processId,
+        string? deviceId,
+        Func<string, CancellationToken, Task> onLine,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(processId);
+        
+        var device = await ResolveDeviceAsync(deviceId, cancellationToken);
+
+        var receiver = new AsyncLineOutputReceiver(onLine);
+        
+        _logger.LogDebug("Starting logcat capture for pid {ProcessId} on Android device {DeviceSerial}",
+            processId,
+            device.Serial);
+
+        await _adbClient.ExecuteRemoteCommandAsync(
+            $"logcat -v threadtime --pid={processId}",
+            device,
+            receiver,
+            cancellationToken);
+    }
+
     private async Task<DeviceData> ResolveDeviceAsync(
         string? deviceId,
         CancellationToken cancellationToken)
@@ -153,19 +202,13 @@ public class AdbAndroidDeviceController(
             return device;
         }
 
-        if (devices.Length == 1)
+        return devices.Length switch
         {
-            return devices[0];
-        }
-
-        if (devices.Length == 0)
-        {
-            throw new InvalidOperationException("No online Android devices were found via ADB");
-        }
-
-        throw new InvalidOperationException(
-            $"Multiple online Android devices were found. Specify deviceId. " +
-            $"Available devices: {FormatDevices(devices)}");
+            1 => devices[0],
+            0 => throw new InvalidOperationException("No online Android devices were found via ADB"),
+            _ => throw new InvalidOperationException($"Multiple online Android devices were found. Specify deviceId. " +
+                                                     $"Available devices: {FormatDevices(devices)}")
+        };
     }
 
     private static string FormatDevices(IReadOnlyCollection<DeviceData> devices)
@@ -210,5 +253,38 @@ public class AdbAndroidDeviceController(
         return output
             .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Any(x => string.Equals(x, "Success", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private class AsyncLineOutputReceiver(
+        Func<string, CancellationToken, Task> onLine) : IShellOutputReceiver
+    {
+        public async Task<bool> AddOutputAsync(
+            string line,
+            CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrWhiteSpace(line))
+            {
+                await onLine(line, cancellationToken);
+            }
+
+            return true;
+        }
+
+        public Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public bool AddOutput(string line)
+        {
+            if (!string.IsNullOrWhiteSpace(line))
+            {
+                onLine(line, CancellationToken.None).GetAwaiter().GetResult();
+            }
+
+            return true;
+        }
+        
+        public void Flush() { }
     }
 }

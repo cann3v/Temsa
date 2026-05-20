@@ -45,6 +45,17 @@
             "enabledScripts": [],
             "disabledScripts": []
           }
+        },
+        {
+          "taskType": "android-logcat-capture",
+          "workerType": "android-dynamic-analysis",
+          "tool": "adb-logcat",
+          "order": 2,
+          "parameters": {
+            "sessionTimeoutSeconds": 600,
+            "processWaitTimeoutSeconds": 30,
+            "processPollIntervalMilliseconds": 500
+          }
         }
       ]
     },

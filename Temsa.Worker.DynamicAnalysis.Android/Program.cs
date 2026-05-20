@@ -18,15 +18,17 @@ builder.Services.AddSingleton<IAndroidDeviceController, AdbAndroidDeviceControll
 builder.Services.AddSingleton<IWorkerTaskHandler, AndroidDynamicSessionTaskHandler>();
 builder.Services.AddSingleton<IWorkerTaskHandler, AndroidInstallAppTaskHandler>();
 builder.Services.AddSingleton<IWorkerTaskHandler, AndroidClearAppDataTaskHandler>();
-builder.Services.AddSingleton<IWorkerTaskHandler, AndroidDynamicSessionTaskHandler>();
 builder.Services.AddSingleton<IWorkerTaskHandler, AndroidUninstallAppTaskHandler>();
 builder.Services.AddSingleton<IWorkerTaskHandler, AndroidForceStopAppTaskHandler>();
+builder.Services.AddSingleton<IWorkerTaskHandler, AndroidLogcatCaptureTaskHandler>();
 
 builder.Services.AddSingleton<IAndroidDynamicSessionExecutor, AndroidDynamicSessionExecutor>();
 builder.Services.AddSingleton<IAndroidInstallAppExecutor, AndroidInstallAppExecutor>();
 builder.Services.AddSingleton<IAndroidClearAppDataExecutor, AndroidClearAppDataExecutor>();
 builder.Services.AddSingleton<IAndroidUninstallAppExecutor, AndroidUninstallAppExecutor>();
 builder.Services.AddSingleton<IAndroidForceStopAppExecutor, AndroidForceStopAppExecutor>();
+builder.Services.AddSingleton<IAndroidLogcatCaptureExecutor, AndroidLogcatCaptureExecutor>();
+
 
 var host = builder.Build();
 await host.RunAsync();

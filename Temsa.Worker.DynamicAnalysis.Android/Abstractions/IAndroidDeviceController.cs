@@ -22,4 +22,15 @@ public interface IAndroidDeviceController
         string packageName,
         string? deviceId,
         CancellationToken cancellationToken = default);
+    
+    Task<IReadOnlyCollection<int>> GetProcessIdsAsync(
+        string packageName,
+        string? deviceId,
+        CancellationToken cancellationToken = default);
+    
+    Task CaptureLogcatAsync(
+        int processId,
+        string? deviceId,
+        Func<string, CancellationToken, Task> onLine,
+        CancellationToken cancellationToken = default);
 }
