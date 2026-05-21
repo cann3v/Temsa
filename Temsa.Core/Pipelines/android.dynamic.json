@@ -89,10 +89,16 @@
       "runPolicy": "always",
       "tasks": [
         {
-          "taskType": "android-uninstall-app",
+          "taskType": "android-clear-app-data",
           "workerType": "android-dynamic-analysis",
           "tool": "adb",
           "order": 1
+        },
+        {
+          "taskType": "android-uninstall-app",
+          "workerType": "android-dynamic-analysis",
+          "tool": "adb",
+          "order": 2
         }
       ]
     }
