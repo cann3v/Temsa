@@ -3,7 +3,7 @@
   "scripts": [
     {
       "id": "android.lifecycle",
-      "path": "android/lifecycle.dist.js",
+      "path": "android/agent.android.basic.bundle.js",
       "enabled": true
     }
   ]

@@ -9,23 +9,14 @@
       "runPolicy": "on-success",
       "tasks": [
         {
-          "taskType": "decompile",
-          "workerType": "static-analysis",
-          "tool": "jadx",
-          "order": 1,
-          "parameters": {
-            "outputFormat": "source"
-          }
-        },
-        {
           "taskType": "sast",
           "workerType": "static-analysis",
-          "tool": "semgrep",
-          "order": 2,
+          "tool": "jadx-semgrep",
+          "order": 1,
           "parameters": {
-            "ruleset": "full",
-            "reportFormat": "json",
-            "threads": 2
+            "ruleset": "android-security",
+            "reportFormat": "sarif",
+            "threads": 1
           }
         }
       ]

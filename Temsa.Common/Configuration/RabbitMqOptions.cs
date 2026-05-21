@@ -70,4 +70,11 @@ public class RabbitMqWorkerControlOptions
     public string WorkerControlExchange { get; init; } = string.Empty;
     public string QueueName { get; init; } = string.Empty;
     public string RoutingKey { get; init; } = string.Empty;
+    
+    public bool IsValid()
+    {
+        return !string.IsNullOrWhiteSpace(WorkerControlExchange) && 
+               !string.IsNullOrWhiteSpace(QueueName) && 
+               !string.IsNullOrWhiteSpace(RoutingKey);
+    }
 }

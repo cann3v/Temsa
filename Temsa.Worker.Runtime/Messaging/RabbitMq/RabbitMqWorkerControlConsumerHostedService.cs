@@ -52,7 +52,6 @@ public class RabbitMqWorkerControlConsumerHostedService(
             exchange: _options.WorkerControlExchange,
             routingKey: _options.RoutingKey,
             cancellationToken: stoppingToken);
-        //
         
         var consumer = new AsyncEventingBasicConsumer(_channel);
         
