@@ -180,6 +180,45 @@ public class ScansController : ControllerBase
         return Ok(response);
     }
     
+    [HttpPost("{scanId:long}/complete-interaction")]
+    [ProducesResponseType(typeof(CompleteInteractionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> CompleteScanInteraction(
+        [FromRoute] long scanId,
+        [FromServices] CompleteInteractionHandler handler,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var result = await handler.HandleAsync(
+                new CompleteInteractionCommand(scanId),
+                cancellationToken);
+
+            var response = new CompleteInteractionResponse(
+                result.ScanId,
+                result.ScanTaskId,
+                result.CommandType,
+                result.OccuredAt);
+
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("was not found"))
+        {
+            return NotFound(new
+            {
+                error = ex.Message
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(new
+            {
+                error = ex.Message
+            });
+        }
+    }
+    
     [HttpPost("{scanId:long}/tasks/{scanTaskId:long}/complete-interaction")]
     [ProducesResponseType(typeof(CompleteInteractionResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

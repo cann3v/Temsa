@@ -2,4 +2,4 @@ namespace Temsa.Core.Application.WorkerControl.Commands.CompleteInteraction;
 
 public record CompleteInteractionCommand(
     long ScanId,
-    long ScanTaskId);
+    long? ScanTaskId = null);

@@ -196,7 +196,8 @@ public class AdbAndroidDeviceController(
             : "--exclude=cache --exclude=code_cache";
 
         var archiveCommand =
-            $"su -c 'tar -cf {remoteArchivePath} -C /data/user/0 {excludes} {packageName}'";
+            $"su 0 sh -c 'umask 022; tar -cf {remoteArchivePath} -C /data/user/0 {excludes} {packageName} && " +
+            $"chmod 644 {remoteArchivePath}'";
 
         try
         {
@@ -218,9 +219,18 @@ public class AdbAndroidDeviceController(
                     output);
             }
             
+            var archiveMetadataOutput = await ExecuteShellCommandAsync(
+                device,
+                $"su 0 sh -c 'ls -la {remoteArchivePath}'",
+                cancellationToken);
+
+            _logger.LogDebug(
+                "Private data archive metadata: {Output}",
+                archiveMetadataOutput);
+            
             var remoteSizeOutput = await ExecuteShellCommandAsync(
                 device,
-                $"su -c 'stat -c %s {remoteArchivePath}'",
+                $"su 0 sh -c 'stat -c %s {remoteArchivePath}'",
                 cancellationToken);
 
             if (!long.TryParse(remoteSizeOutput.Trim(), out var remoteSizeBytes) ||
@@ -231,15 +241,18 @@ public class AdbAndroidDeviceController(
                     $"PackageName='{packageName}', RemoteArchivePath='{remoteArchivePath}', StatOutput='{remoteSizeOutput}'");
             }
 
-            await using var destinationStream = File.Create(destinationArchivePath);
-            
-            await _adbClient.PullAsync(
-                device,
-                remoteArchivePath,
-                destinationStream,
-                progress: null,
-                useV2: false,
-                cancellationToken);
+            await using (var destinationStream = File.Create(destinationArchivePath))
+            {
+                await _adbClient.PullAsync(
+                    device,
+                    remoteArchivePath,
+                    destinationStream,
+                    progress: null,
+                    useV2: true,
+                    cancellationToken);
+
+                await destinationStream.FlushAsync(cancellationToken);
+            }
             
             var localFile = new FileInfo(destinationArchivePath);
 
@@ -261,7 +274,7 @@ public class AdbAndroidDeviceController(
             {
                 await ExecuteShellCommandAsync(
                     device,
-                    $"su -c 'rm -f {remoteArchivePath}'",
+                    $"su 0 sh -c 'rm -f {remoteArchivePath}'",
                     CancellationToken.None);
             }
             catch (Exception ex)
