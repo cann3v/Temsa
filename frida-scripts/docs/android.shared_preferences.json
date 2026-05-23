@@ -1,0 +1,86 @@
+{
+    "type": "send",
+    "payload": {
+        "schemaVersion": 1,
+        "profileId": "android.basic",
+        "platform": "android",
+        "timestamp": "2026-05-17T20: 50: 40.355Z",
+        "moduleId": "android.shared_preferences",
+        "type": "telemetry.event",
+        "category": "storage",
+        "event": "shared_preferences.open",
+        "api": "ContextWrapper.getSharedPreferences",
+        "operation": "open",
+        "name": "users",
+        "mode": 0,
+        "backtraceType": "java",
+        "backtrace": [
+            "android.content.ContextWrapper.getSharedPreferences(Native Method)",
+            "owasp.sat.agoat.InsecureStorageSharedPrefs$onCreate$1.onClick(InsecureStorageSharedPrefs.kt: 23)",
+            "android.view.View.performClick(View.java: 8160)",
+            "android.widget.TextView.performClick(TextView.java: 16222)",
+            "android.view.View.performClickInternal(View.java: 8137)",
+            "android.view.View.access$3700(View.java: 888)"
+        ]
+    }
+}
+{
+    "type": "send",
+    "payload": {
+        "schemaVersion": 1,
+        "profileId": "android.basic",
+        "platform": "android",
+        "timestamp": "2026-05-17T20: 50: 40.367Z",
+        "moduleId": "android.shared_preferences",
+        "type": "finding.candidate",
+        "category": "storage",
+        "event": "shared_preferences.write",
+        "api": "SharedPreferences.Editor.putString",
+        "operation": "write",
+        "key": "username",
+        "valueType": "string",
+        "value": "ridid",
+        "valueLength": 5,
+        "backtraceType": "java",
+        "backtrace": [
+            "android.app.SharedPreferencesImpl$EditorImpl.putString(Native Method)",
+            "owasp.sat.agoat.InsecureStorageSharedPrefs$onCreate$1.onClick(InsecureStorageSharedPrefs.kt: 25)",
+            "android.view.View.performClick(View.java: 8160)",
+            "android.widget.TextView.performClick(TextView.java: 16222)",
+            "android.view.View.performClickInternal(View.java: 8137)",
+            "android.view.View.access$3700(View.java: 888)",
+            "android.view.View$PerformClick.run(View.java: 30236)",
+            "android.os.Handler.handleCallback(Handler.java: 938)"
+        ]
+    }
+}
+{
+    "type": "send",
+    "payload": {
+        "schemaVersion": 1,
+        "profileId": "android.basic",
+        "platform": "android",
+        "timestamp": "2026-05-17T20: 50: 40.377Z",
+        "moduleId": "android.shared_preferences",
+        "type": "finding.candidate",
+        "category": "storage",
+        "event": "shared_preferences.write",
+        "api": "SharedPreferences.Editor.putString",
+        "operation": "write",
+        "key": "password",
+        "valueType": "string",
+        "value": "oweodof",
+        "valueLength": 7,
+        "backtraceType": "java",
+        "backtrace": [
+            "android.app.SharedPreferencesImpl$EditorImpl.putString(Native Method)",
+            "owasp.sat.agoat.InsecureStorageSharedPrefs$onCreate$1.onClick(InsecureStorageSharedPrefs.kt: 26)",
+            "android.view.View.performClick(View.java: 8160)",
+            "android.widget.TextView.performClick(TextView.java: 16222)",
+            "android.view.View.performClickInternal(View.java: 8137)",
+            "android.view.View.access$3700(View.java: 888)",
+            "android.view.View$PerformClick.run(View.java: 30236)",
+            "android.os.Handler.handleCallback(Handler.java: 938)"
+        ]
+    }
+}

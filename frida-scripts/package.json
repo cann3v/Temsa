@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "build:android-basic": "frida-compile src/android/agent.android.basic.js -o dist/android/agent.android.basic.bundle.js",
+    "build:ios-basic": "frida-compile src/ios/agent.ios.basic.js -o dist/ios/agent.ios.basic.bundle.js"
+  },
+  "dependencies": {
+    "frida-java-bridge": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/frida-gum": "^19.1.0",
+    "frida-compile": "^16.0.0"
+  }
+}

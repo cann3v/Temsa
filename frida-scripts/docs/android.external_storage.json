@@ -1,0 +1,32 @@
+{
+    "type": "send",
+    "payload": {
+        "schemaVersion": 1,
+        "scriptId": "android.external_storage",
+        "category": "storage",
+        "platform": "android",
+        "timestamp": "2026-05-17T19: 57: 10.277Z",
+        "type": "finding.candidate",
+        "event": "external_storage.open",
+        "api": "libc.open",
+        "access": "open",
+        "path": "/storage/emulated/0/users3390619500123723902tmp",
+        "backtrace": [
+            "java.io.UnixFileSystem.createFileExclusively0(Native Method)",
+            "java.io.UnixFileSystem.createFileExclusively(UnixFileSystem.java: 317)",
+            "java.io.File.createTempFile(File.java: 2018)",
+            "owasp.sat.agoat.InsecureStorageSDCardActivity$onCreate$1.onClick(InsecureStorageSDCardActivity.kt: 25)",
+            "android.view.View.performClick(View.java: 8160)",
+            "android.widget.TextView.performClick(TextView.java: 16222)",
+            "android.view.View.performClickInternal(View.java: 8137)",
+            "android.view.View.access$3700(View.java: 888)",
+            "android.view.View$PerformClick.run(View.java: 30236)",
+            "android.os.Handler.handleCallback(Handler.java: 938)",
+            "android.os.Handler.dispatchMessage(Handler.java: 99)",
+            "android.os.Looper.loop(Looper.java: 246)",
+            "android.app.ActivityThread.main(ActivityThread.java: 8653)",
+            "java.lang.reflect.Method.invoke(Native Method)",
+            "com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java: 602)"
+        ]
+    }
+}

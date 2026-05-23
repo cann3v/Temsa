@@ -1,0 +1,127 @@
+{
+    "type": "send",
+    "payload": {
+        "schemaVersion": 1,
+        "profileId": "ios.basic",
+        "platform": "ios",
+        "timestamp": "2026-05-20T12:18:42.414Z",
+        "moduleId": "ios.cipher",
+        "type": "telemetry.event",
+        "category": "storage",
+        "event": "keychain.update",
+        "api": "SecItemUpdate",
+        "operation": "update",
+        "backtraceType": None,
+        "backtrace": None,
+        "query": {
+            "service": "flutter_secure_storage_service",
+            "account": "flutter.key_storebiometricEnabled",
+            "class": "kSecClassGenericPassword",
+            "synchronizable": False
+        },
+        "attributesToUpdate": {
+            "synchronizable": False,
+            "valueData": {
+                "encoding": "hex+utf8-preview",
+                "length": 148,
+                "capturedLength": 148,
+                "truncated": False,
+                "hex": "424c53734e7a4c552f72302b4332426c4461316d57594f794a327a41365a6669356c377555566f3562414f6e4e55335a6c62773651694f313963555a325653436743694649554d62426d47736b6139754a58776234326856316d734a555163316c377a57312b7473516967646354735175394a775a672b44726653686a3470653855366f524e496270475650493851535563553d",
+                "utf8Preview": "BLSsNzLU/r0+C2BlDa1mWYOyJ2zA6Zfi5l7uUVo5bAOnNU3Zlbw6QiO19cUZ2VSCgCiFIUMbBmGska9uJXwb42hV1msJUQc1l7zW1+tsQigdcTsQu9JwZg+DrfShj4pe8U6oRNIbpGVPI8QSUcU="
+            },
+            "accessible": "kSecAttrAccessibleWhenUnlockedThisDeviceOnly"
+        },
+        "status": 0
+    }
+}
+{
+    "type": "send",
+    "payload": {
+        "schemaVersion": 1,
+        "profileId": "ios.basic",
+        "platform": "ios",
+        "timestamp": "2026-05-20T12:18:31.666Z",
+        "moduleId": "ios.cipher",
+        "type": "telemetry.event",
+        "category": "crypto",
+        "event": "commoncrypto.hash.oneshot",
+        "api": "CC_MD5",
+        "operation": "hash",
+        "algorithm": "CC_MD5",
+        "input": {
+            "encoding": "hex+utf8-preview",
+            "length": 24,
+            "capturedLength": 24,
+            "truncated": False,
+            "hex": "4d47436f7079416e737765726d756c74697461736b696e67",
+            "utf8Preview": "MGCopyAnswermultitasking"
+        },
+        "digest": {
+            "encoding": "hex+utf8-preview",
+            "length": 16,
+            "capturedLength": 16,
+            "truncated": False,
+            "hex": "44408bbb36c9ea887cab834a47c46d36",
+            "utf8Preview": None
+        },
+        "returnValue": "0x16b9365b0",
+        "backtraceType": None,
+        "backtrace": None
+    }
+}
+
+{
+    "type": "send",
+    "payload": {
+        "schemaVersion": 1,
+        "profileId": "ios.basic",
+        "platform": "ios",
+        "timestamp": "2026-05-20T12:18:09.301Z",
+        "moduleId": "ios.cipher",
+        "type": "telemetry.event",
+        "category": "crypto",
+        "event": "commoncrypto.hash.update",
+        "api": "CC_MD5_Update",
+        "algorithm": "CC_MD5",
+        "context": "0x282ac7240",
+        "input": {
+            "encoding": "hex+utf8-preview",
+            "length": 16,
+            "capturedLength": 16,
+            "truncated": False,
+            "hex": "57f18dfd63d01a1223a0d88683fcca95",
+            "utf8Preview": None
+        },
+        "totalInputLength": 32,
+        "backtraceType": None,
+        "backtrace": None
+    }
+}
+{
+    "type": "send",
+    "payload": {
+        "schemaVersion": 1,
+        "profileId": "ios.basic",
+        "platform": "ios",
+        "timestamp": "2026-05-20T12:18:09.301Z",
+        "moduleId": "ios.cipher",
+        "type": "telemetry.event",
+        "category": "crypto",
+        "event": "commoncrypto.hash.final",
+        "api": "CC_MD5_Final",
+        "algorithm": "CC_MD5",
+        "context": "0x282ac7240",
+        "totalInputLength": 32,
+        "digest": {
+            "encoding": "hex+utf8-preview",
+            "length": 16,
+            "capturedLength": 16,
+            "truncated": False,
+            "hex": "c27f85b00d03739bdc96c3af8152efac",
+            "utf8Preview": None
+        },
+        "status": "0x1",
+        "backtraceType": None,
+        "backtrace": None
+    }
+}
