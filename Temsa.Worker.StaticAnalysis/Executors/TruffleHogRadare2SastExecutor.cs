@@ -256,39 +256,39 @@ public class TruffleHogRadare2SastExecutor(
             throw new InvalidOperationException("No radare2 scripts selected for execution");
         }
 
-        await using var reportStream = File.CreateText(reportPath);
+        var runnerScriptPath = Path.Combine(
+            Path.GetDirectoryName(reportPath)!,
+            "radare2-runner.r2");
 
-        await reportStream.WriteLineAsync("# Temsa radare2 report");
-        await reportStream.WriteLineAsync($"# Binary: {binaryPath}");
-        await reportStream.WriteLineAsync($"# Scripts: {string.Join(", ", scripts.Select(x => x.Id))}");
-        await reportStream.WriteLineAsync();
+        await BuildRadare2RunnerScriptAsync(
+            scripts,
+            runnerScriptPath,
+            cancellationToken);
 
-        foreach (var script in scripts)
-        {
-            await events.ReportLogAsync(
-                $"Running radare2 script '{script.Id}'",
-                nameof(LogLevel.Information),
-                cancellationToken);
+        await events.ReportLogAsync(
+            $"Running radare2 analysis once with {scripts.Count} script(s): " +
+            $"{string.Join(", ", scripts.Select(x => x.Id))}",
+            nameof(LogLevel.Information),
+            cancellationToken);
 
-            var result = await RunProcessAsync(
-                fileName: _options.Radare2Executable,
-                arguments:
-                [
-                    "-A",
-                    "-q",
-                    "-i",
-                    script.FullPath,
-                    binaryPath
-                ],
-                workingDirectory: Path.GetDirectoryName(binaryPath)!,
-                allowedExitCodes: [0],
-                cancellationToken);
+        var result = await RunProcessAsync(
+            fileName: _options.Radare2Executable,
+            arguments:
+            [
+                "-A",
+                "-q",
+                "-i",
+                runnerScriptPath,
+                binaryPath
+            ],
+            workingDirectory: Path.GetDirectoryName(binaryPath)!,
+            allowedExitCodes: [0],
+            cancellationToken);
 
-            await reportStream.WriteLineAsync($"## script: {script.Id}");
-            await reportStream.WriteLineAsync($"## path: {script.RelativePath}");
-            await reportStream.WriteLineAsync(result.Stdout);
-            await reportStream.WriteLineAsync();
-        }
+        await File.WriteAllTextAsync(
+            reportPath,
+            result.Stdout,
+            cancellationToken);
     }
     
     private async Task<IReadOnlyCollection<ScanArtifactDescriptor>> UploadReportsAsync(
@@ -510,6 +510,34 @@ public class TruffleHogRadare2SastExecutor(
             $"Unknown radare2 script ids in '{parameterName}' for profile '{profileName}': {string.Join(", ", unknownIds)}");
     }
     
+    private static async Task BuildRadare2RunnerScriptAsync(
+        IReadOnlyCollection<ResolvedRadare2Script> scripts,
+        string runnerScriptPath,
+        CancellationToken cancellationToken)
+    {
+        await using var stream = File.Create(runnerScriptPath);
+        await using var writer = new StreamWriter(stream);
+
+        await writer.WriteLineAsync("e scr.color=false");
+        await writer.WriteLineAsync("e scr.utf8=true");
+        await writer.WriteLineAsync("echo # Temsa radare2 report");
+        await writer.WriteLineAsync();
+
+        foreach (var script in scripts)
+        {
+            var scriptContent = await File.ReadAllTextAsync(
+                script.FullPath,
+                cancellationToken);
+
+            await writer.WriteLineAsync($"echo ## script: {script.Id}");
+            await writer.WriteLineAsync($"echo ## path: {script.RelativePath}");
+            await writer.WriteLineAsync(scriptContent.Trim());
+            await writer.WriteLineAsync();
+        }
+
+        await writer.WriteLineAsync("q");
+    }
+    
     private async Task<ProcessExecutionResult> RunProcessAsync(
         string fileName,
         IReadOnlyCollection<string> arguments,
@@ -549,16 +577,6 @@ public class TruffleHogRadare2SastExecutor(
 
         var stdout = await stdoutTask;
         var stderr = await stderrTask;
-
-        if (!string.IsNullOrWhiteSpace(stdout))
-        {
-            _logger.LogDebug("Process {FileName} stdout: {Stdout}", fileName, stdout);
-        }
-
-        if (!string.IsNullOrWhiteSpace(stderr))
-        {
-            _logger.LogDebug("Process {FileName} stderr: {Stderr}", fileName, stderr);
-        }
 
         if (!allowedExitCodes.Contains(process.ExitCode))
         {
