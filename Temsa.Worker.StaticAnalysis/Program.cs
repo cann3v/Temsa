@@ -18,7 +18,10 @@ builder.Services.AddSingleton<IWorkerTaskHandler, DecompileTaskHandler>();
 builder.Services.AddSingleton<IDecompileExecutor, FakeDecompileExecutor>();
 builder.Services.AddSingleton<IWorkerTaskHandler, SastTaskHandler>();
 // builder.Services.AddSingleton<ISastExecutor, FakeSastExecutor>();
-builder.Services.AddSingleton<ISastExecutor, JadxSemgrepSastExecutor>();
+// builder.Services.AddSingleton<ISastExecutor, JadxSemgrepSastExecutor>();
+builder.Services.AddSingleton<JadxSemgrepSastExecutor>();
+builder.Services.AddSingleton<TruffleHogRadare2SastExecutor>();
+builder.Services.AddSingleton<ISastExecutor, CompositeSastExecutor>();
 
 var host = builder.Build();
 await host.RunAsync();

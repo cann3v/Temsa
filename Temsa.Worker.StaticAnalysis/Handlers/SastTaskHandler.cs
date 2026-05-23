@@ -26,12 +26,15 @@ public class SastTaskHandler(
         var pipelineParameters = DeserializePipelineParameters(context.Task.ParametersJson);
         
         var parameters = new SastTaskParameters(
-            InputArtifact:  context.Task.InputArtifact,
+            InputArtifact: context.Task.InputArtifact,
             Platform: context.Task.Platform,
             Tool: context.Task.Tool,
             Ruleset: pipelineParameters.Ruleset,
             ReportFormat: pipelineParameters.ReportFormat,
-            Threads: pipelineParameters.Threads);
+            Threads: pipelineParameters.Threads,
+            Radare2Profile: pipelineParameters.Radare2Profile,
+            EnabledRadare2Scripts: pipelineParameters.EnabledRadare2Scripts,
+            DisabledRadare2Scripts: pipelineParameters.DisabledRadare2Scripts);
         
         _logger.LogInformation(
             "Executing SAST task {ScanTaskId} using tool {Tool}",
@@ -48,20 +51,23 @@ public class SastTaskHandler(
             Artifacts: result.Artifacts,
             Result: JsonSerializer.SerializeToElement(result, JsonSerializerOptions),
             Message: "SAST task completed successfully",
-            Log: "Fake SAST execution finished");
+            Log: "SAST execution finished");
     }
 
     private static PipelineSastTaskParameters DeserializePipelineParameters(string? parametersJson)
     {
         return string.IsNullOrWhiteSpace(parametersJson)
-            ? new PipelineSastTaskParameters(null, null, null)
+            ? new PipelineSastTaskParameters(null, null, null, null, null, null)
             : JsonSerializer.Deserialize<PipelineSastTaskParameters>(
                 parametersJson,
-                JsonSerializerOptions) ?? new PipelineSastTaskParameters(null, null, null);
+                JsonSerializerOptions) ?? new PipelineSastTaskParameters(null, null, null, null, null, null);
     }
 
     private record PipelineSastTaskParameters(
         string? Ruleset,
         string? ReportFormat,
-        int? Threads);
+        int? Threads,
+        string? Radare2Profile,
+        IReadOnlyCollection<string>? EnabledRadare2Scripts,
+        IReadOnlyCollection<string>? DisabledRadare2Scripts);
 }

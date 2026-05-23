@@ -1,0 +1,25 @@
+{
+  "name": "ios-basic",
+  "scripts": [
+    {
+      "id": "ios.info",
+      "path": "ios/info.r2",
+      "enabled": true
+    },
+    {
+      "id": "ios.strings",
+      "path": "ios/strings.r2",
+      "enabled": true
+    },
+    {
+      "id": "ios.imports",
+      "path": "ios/imports.r2",
+      "enabled": true
+    },
+    {
+      "id": "ios.symbols",
+      "path": "ios/symbols.r2",
+      "enabled": false
+    }
+  ]
+}

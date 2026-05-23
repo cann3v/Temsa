@@ -15,4 +15,10 @@
       <ProjectReference Include="..\Temsa.Contracts\Temsa.Contracts.csproj" />
       <ProjectReference Include="..\Temsa.Worker.Runtime\Temsa.Worker.Runtime.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Scripts\r2\**\*.r2">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>

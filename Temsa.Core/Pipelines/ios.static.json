@@ -9,11 +9,15 @@
       "runPolicy": "on-success",
       "tasks": [
         {
-          "taskType": "ios-static-placeholder",
+          "taskType": "sast",
           "workerType": "static-analysis",
-          "tool": "placeholder",
+          "tool": "trufflehog-radare2",
           "order": 1,
-          "parameters": {}
+          "parameters": {
+            "radare2Profile": "ios-basic",
+            "enabledRadare2Scripts": [],
+            "disabledRadare2Scripts": []
+          }
         }
       ]
     }
