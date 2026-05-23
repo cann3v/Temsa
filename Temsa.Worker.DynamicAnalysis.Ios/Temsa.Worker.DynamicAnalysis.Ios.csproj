@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>dotnet-Temsa.Worker.DynamicAnalysis.Ios-40783abc-e098-4742-9710-a001ac259315</UserSecretsId>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Temsa.Worker.DynamicAnalysis.Runtime\Temsa.Worker.DynamicAnalysis.Runtime.csproj" />
+      <ProjectReference Include="..\Temsa.Worker.Runtime\Temsa.Worker.Runtime.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Scripts\ios\" />
+    </ItemGroup>
+</Project>
