@@ -50,8 +50,7 @@ public class AndroidInstallAppTaskHandler(
     {
         if (string.IsNullOrWhiteSpace(parametersJson))
         {
-            return new AndroidInstallAppPipelineParameters(
-                Reinstall: true);
+            return new AndroidInstallAppPipelineParameters();
         }
 
         return JsonSerializer.Deserialize<AndroidInstallAppPipelineParameters>(
