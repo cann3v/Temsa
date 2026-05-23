@@ -1,0 +1,76 @@
+<Project>
+    <PropertyGroup>
+        <TemsaFridaScriptsRoot Condition="'$(TemsaFridaScriptsRoot)' == ''">$(MSBuildProjectDirectory)\..\frida-scripts</TemsaFridaScriptsRoot>
+        <TemsaFridaBuildEnabled Condition="'$(TemsaFridaBuildEnabled)' == ''">true</TemsaFridaBuildEnabled>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(TemsaFridaBuildEnabled)' == 'true'">
+        <Content Update="Scripts\profiles\**\*.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+        </Content>
+    </ItemGroup>
+
+    <Target Name="TemsaBuildFridaBundle"
+            Condition="'$(TemsaFridaBuildEnabled)' == 'true' and '$(TemsaFridaBuildCommand)' != ''">
+
+        <Error
+                Condition="!Exists('$(TemsaFridaScriptsRoot)\package.json')"
+                Text="frida-scripts package.json was not found at '$(TemsaFridaScriptsRoot)'." />
+
+        <Message
+                Importance="high"
+                Text="Building Frida bundle: npm run $(TemsaFridaBuildCommand)" />
+
+        <Exec
+                WorkingDirectory="$(TemsaFridaScriptsRoot)"
+                Command="npm run $(TemsaFridaBuildCommand)" />
+
+        <Error
+                Condition="!Exists('$(TemsaFridaBundleSource)')"
+                Text="Frida bundle was not created: '$(TemsaFridaBundleSource)'." />
+    </Target>
+
+    <Target Name="TemsaCopyFridaBundleToOutput"
+            AfterTargets="Build"
+            DependsOnTargets="TemsaBuildFridaBundle"
+            Condition="'$(TemsaFridaBuildEnabled)' == 'true' and '$(TemsaFridaBundleSource)' != '' and '$(TemsaFridaBundleLink)' != ''">
+
+        <PropertyGroup>
+            <TemsaFridaBundleOutputPath>$(TargetDir)$(TemsaFridaBundleLink)</TemsaFridaBundleOutputPath>
+        </PropertyGroup>
+
+        <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(TemsaFridaBundleOutputPath)'))" />
+
+        <Message
+                Importance="high"
+                Text="Copying Frida bundle to output: $(TemsaFridaBundleOutputPath)" />
+
+        <Copy
+                SourceFiles="$(TemsaFridaBundleSource)"
+                DestinationFiles="$(TemsaFridaBundleOutputPath)"
+                SkipUnchangedFiles="false" />
+    </Target>
+
+    <Target Name="TemsaCopyFridaBundleToPublish"
+            AfterTargets="Publish"
+            DependsOnTargets="TemsaBuildFridaBundle"
+            Condition="'$(TemsaFridaBuildEnabled)' == 'true' and '$(PublishDir)' != '' and '$(TemsaFridaBundleSource)' != '' and '$(TemsaFridaBundleLink)' != ''">
+
+        <PropertyGroup>
+            <TemsaFridaBundlePublishPath>$(PublishDir)$(TemsaFridaBundleLink)</TemsaFridaBundlePublishPath>
+        </PropertyGroup>
+
+        <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(TemsaFridaBundlePublishPath)'))" />
+
+        <Message
+                Importance="high"
+                Text="Copying Frida bundle to publish: $(TemsaFridaBundlePublishPath)" />
+
+        <Copy
+                SourceFiles="$(TemsaFridaBundleSource)"
+                DestinationFiles="$(TemsaFridaBundlePublishPath)"
+                SkipUnchangedFiles="false" />
+    </Target>
+</Project>

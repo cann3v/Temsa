@@ -5,14 +5,17 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <UserSecretsId>dotnet-Temsa.Worker.DynamicAnalysis.Ios-40783abc-e098-4742-9710-a001ac259315</UserSecretsId>
+
+        <TemsaFridaBuildCommand>build:ios-basic</TemsaFridaBuildCommand>
+        <TemsaFridaBundleSource>$(MSBuildProjectDirectory)\..\frida-scripts\dist\ios\agent.ios.basic.bundle.js</TemsaFridaBundleSource>
+        <TemsaFridaBundleLink>Scripts\ios\agent.ios.basic.bundle.js</TemsaFridaBundleLink>
     </PropertyGroup>
+
+    <Import Project="..\build\Temsa.FridaScripts.targets" />
 
     <ItemGroup>
       <ProjectReference Include="..\Temsa.Worker.DynamicAnalysis.Runtime\Temsa.Worker.DynamicAnalysis.Runtime.csproj" />
       <ProjectReference Include="..\Temsa.Worker.Runtime\Temsa.Worker.Runtime.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Scripts\ios\" />
-    </ItemGroup>
+    
 </Project>

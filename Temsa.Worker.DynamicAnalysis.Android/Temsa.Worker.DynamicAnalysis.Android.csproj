@@ -4,7 +4,13 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+
+        <TemsaFridaBuildCommand>build:android-basic</TemsaFridaBuildCommand>
+        <TemsaFridaBundleSource>$(MSBuildProjectDirectory)\..\frida-scripts\dist\android\agent.android.basic.bundle.js</TemsaFridaBundleSource>
+        <TemsaFridaBundleLink>Scripts\android\agent.android.basic.bundle.js</TemsaFridaBundleLink>
     </PropertyGroup>
+
+    <Import Project="..\build\Temsa.FridaScripts.targets" />
 
     <ItemGroup>
       <ProjectReference Include="..\Temsa.Worker.DynamicAnalysis.Runtime\Temsa.Worker.DynamicAnalysis.Runtime.csproj" />
