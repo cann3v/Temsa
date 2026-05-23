@@ -73,7 +73,7 @@ public class AndroidLogcatCaptureExecutor(
                 logStream,
                 objectKey,
                 fileName: "logcat.txt",
-                contentType: "textp/plain",
+                contentType: "text/plain",
                 cancellationToken);
 
             var artifact = new ScanArtifactDescriptor(
