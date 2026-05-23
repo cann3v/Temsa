@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Worker.DynamicAnalysi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Worker.DynamicAnalysis.Android", "Temsa.Worker.DynamicAnalysis.Android\Temsa.Worker.DynamicAnalysis.Android.csproj", "{A993D6C4-53EC-49B1-8B8F-30DA09E0B958}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Temsa.Worker.DynamicAnalysis.Ios", "Temsa.Worker.DynamicAnalysis.Ios\Temsa.Worker.DynamicAnalysis.Ios.csproj", "{985B1B95-E337-4199-A2E3-7BE494CB3661}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,9 @@ Global
 		{A993D6C4-53EC-49B1-8B8F-30DA09E0B958}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A993D6C4-53EC-49B1-8B8F-30DA09E0B958}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A993D6C4-53EC-49B1-8B8F-30DA09E0B958}.Release|Any CPU.Build.0 = Release|Any CPU
+		{985B1B95-E337-4199-A2E3-7BE494CB3661}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{985B1B95-E337-4199-A2E3-7BE494CB3661}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{985B1B95-E337-4199-A2E3-7BE494CB3661}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{985B1B95-E337-4199-A2E3-7BE494CB3661}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,10 @@
+{
+  "name": "ios-basic",
+  "scripts": [
+    {
+      "id": "ios.cipher",
+      "path": "ios/agent.ios.basic.bundle.js",
+      "enabled": true
+    }
+  ]
+}

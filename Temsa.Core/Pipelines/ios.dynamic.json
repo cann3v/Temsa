@@ -1,10 +1,27 @@
 {
   "platform": "ios",
   "analysisType": "dynamic",
+  "parameters": {
+    "bundleId": "ru.infosysco.isfront"
+  },
   "stages": [
     {
-      "id": "interactive-analysis",
+      "id": "prepare",
       "order": 1,
+      "execution": "sequential",
+      "runPolicy": "on-success",
+      "tasks": [
+        {
+          "taskType": "ios-install-app",
+          "workerType": "ios-dynamic-analysis",
+          "tool": "ideviceinstaller",
+          "order": 1
+        }
+      ]
+    },
+    {
+      "id": "interactive-analysis",
+      "order": 2,
       "execution": "parallel",
       "runPolicy": "on-success",
       "tasks": [
@@ -14,12 +31,51 @@
           "tool": "frida",
           "order": 1,
           "parameters": {
-            "bundleId": "com.example.app",
-            "sessionTimeoutSeconds": 30,
+            "sessionTimeoutSeconds": 600,
             "scriptProfile": "ios-basic",
             "enabledScripts": [],
             "disabledScripts": []
           }
+        },
+        {
+          "taskType": "ios-system-log-capture",
+          "workerType": "ios-dynamic-analysis",
+          "tool": "libimobiledevice",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "id": "post-analysis",
+      "order": 3,
+      "execution": "sequential",
+      "runPolicy": "on-success",
+      "tasks": [
+        {
+          "taskType": "ios-force-stop-app",
+          "workerType": "ios-dynamic-analysis",
+          "tool": "frida",
+          "order": 1
+        },
+        {
+          "taskType": "ios-app-container-dump",
+          "workerType": "ios-dynamic-analysis",
+          "tool": "ssh",
+          "order": 2
+        }
+      ]
+    },
+    {
+      "id": "cleanup",
+      "order": 4,
+      "execution": "sequential",
+      "runPolicy": "always",
+      "tasks": [
+        {
+          "taskType": "ios-uninstall-app",
+          "workerType": "ios-dynamic-analysis",
+          "tool": "libimobiledevice",
+          "order": 1
         }
       ]
     }
