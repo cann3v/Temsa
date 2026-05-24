@@ -38,3 +38,5 @@ Desktop.ini
 
 **/node_modules/**
 **/dist/**/*.js
+
+external/*

@@ -8,14 +8,17 @@ using Temsa.Contracts.Artifacts;
 using Temsa.Worker.Runtime.Abstractions;
 using Temsa.Worker.StaticAnalysis.Abstractions;
 using Temsa.Worker.StaticAnalysis.Models.Sast;
+using Temsa.Worker.StaticAnalysis.Radare2;
 
 namespace Temsa.Worker.StaticAnalysis.Executors;
 
 public class TruffleHogRadare2SastExecutor(
+    Radare2AnalysisRunner radare2AnalysisRunner,
     IArtifactStorage artifactStorage,
     IOptions<StaticAnalysisToolOptions> options,
     ILogger<TruffleHogRadare2SastExecutor> logger) : ISastExecutor
 {
+    private readonly Radare2AnalysisRunner _radare2AnalysisRunner = radare2AnalysisRunner;
     private readonly IArtifactStorage _artifactStorage = artifactStorage;
     private readonly StaticAnalysisToolOptions _options = options.Value;
     private readonly ILogger<TruffleHogRadare2SastExecutor> _logger = logger;
@@ -58,6 +61,13 @@ public class TruffleHogRadare2SastExecutor(
             events,
             cancellationToken);
         
+        var radare2FindingsCount = await RunRadare2PipeAnalysisAsync(
+            parameters,
+            mainBinaryPath,
+            workspace.Radare2FindingsPath,
+            events,
+            cancellationToken);
+        
         await events.ReportProgressAsync(
             phase: "uploading_reports",
             message: "Uploading trufflehog and r2 reports",
@@ -86,7 +96,7 @@ public class TruffleHogRadare2SastExecutor(
             Ruleset: parameters.Ruleset,
             ReportFormat: "ndjson+text",
             Threads: parameters.Threads,
-            FindingsCount: truffleHogFindingsCount,
+            FindingsCount: truffleHogFindingsCount + radare2FindingsCount,
             Artifacts: artifacts);
     }
 
@@ -96,7 +106,8 @@ public class TruffleHogRadare2SastExecutor(
             IpaPath: Path.Combine(tempDirectory, "input.ipa"),
             UnpackedDirectory: Path.Combine(tempDirectory, "unpacked"),
             TruffleHogReportPath: Path.Combine(tempDirectory, "trufflehog-results.ndjson"),
-            Radare2ReportPath: Path.Combine(tempDirectory, "radare2-report.txt"));
+            Radare2ReportPath: Path.Combine(tempDirectory, "radare2-report.txt"),
+            Radare2FindingsPath: Path.Combine(tempDirectory, "radare2-findings.ndjson"));
     }
     
     private async Task DownloadIpaAsync(
@@ -291,6 +302,28 @@ public class TruffleHogRadare2SastExecutor(
             cancellationToken);
     }
     
+    private async Task<int> RunRadare2PipeAnalysisAsync(
+        SastTaskParameters parameters,
+        string binaryPath,
+        string findingsPath,
+        IWorkerTaskEventSink events,
+        CancellationToken cancellationToken)
+    {
+        await events.ReportProgressAsync(
+            phase: "running_radare2_pipe_analysis",
+            message: "Running structured radare2 analysis through r2pipe",
+            percent: 75,
+            cancellationToken);
+
+        return await _radare2AnalysisRunner.AnalyzeAsync(
+            binaryPath,
+            findingsPath,
+            _options.Radare2Executable,
+            parameters.EnabledRadare2Analyzers,
+            parameters.DisabledRadare2Analyzers,
+            cancellationToken);
+    }
+    
     private async Task<IReadOnlyCollection<ScanArtifactDescriptor>> UploadReportsAsync(
         SastTaskParameters parameters,
         IosSastWorkspace workspace,
@@ -309,6 +342,12 @@ public class TruffleHogRadare2SastExecutor(
                 workspace.Radare2ReportPath,
                 fileName: "radare2-report.txt",
                 contentType: "text/plain",
+                cancellationToken),
+            await UploadReportAsync(
+                parameters,
+                workspace.Radare2FindingsPath,
+                fileName: "radare2-findings.ndjson",
+                contentType: "application/x-ndjson",
                 cancellationToken)
         };
 
@@ -595,7 +634,8 @@ public class TruffleHogRadare2SastExecutor(
         string IpaPath,
         string UnpackedDirectory,
         string TruffleHogReportPath,
-        string Radare2ReportPath);
+        string Radare2ReportPath,
+        string Radare2FindingsPath);
     
     private record ProcessExecutionResult(
         int ExitCode,

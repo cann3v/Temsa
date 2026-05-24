@@ -11,4 +11,6 @@ public record SastTaskParameters(
     int? Threads,
     string? Radare2Profile,
     IReadOnlyCollection<string>? EnabledRadare2Scripts,
-    IReadOnlyCollection<string>? DisabledRadare2Scripts);
+    IReadOnlyCollection<string>? DisabledRadare2Scripts,
+    IReadOnlyCollection<string>? EnabledRadare2Analyzers,
+    IReadOnlyCollection<string>? DisabledRadare2Analyzers);

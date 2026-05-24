@@ -16,7 +16,13 @@
           "parameters": {
             "radare2Profile": "ios-basic",
             "enabledRadare2Scripts": [],
-            "disabledRadare2Scripts": []
+            "disabledRadare2Scripts": [],
+            "enabledRadare2Analyzers": [
+              "ios.ats",
+              "ios.crypto",
+              "ios.antidebug"
+            ],
+            "disabledRadare2Analyzers": []
           }
         }
       ]

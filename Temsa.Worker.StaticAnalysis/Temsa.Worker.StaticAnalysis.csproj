@@ -14,6 +14,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Temsa.Contracts\Temsa.Contracts.csproj" />
       <ProjectReference Include="..\Temsa.Worker.Runtime\Temsa.Worker.Runtime.csproj" />
+      <ProjectReference Include="..\Temsa.Worker.StaticAnalysis.Radare2\Temsa.Worker.StaticAnalysis.Radare2.csproj" />
     </ItemGroup>
 
     <ItemGroup>
