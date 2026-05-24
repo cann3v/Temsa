@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using Temsa.Worker.StaticAnalysis.Radare2.Abstractions;
 using Temsa.Worker.StaticAnalysis.Radare2.Context;
@@ -85,7 +86,7 @@ public class IosCryptoAnalyzer : IRadare2Analyzer
             Confidence: "low",
             Evidence: suspiciousStrings));
     }
-
+    
     private async Task AddCCCryptXrefFindingsAsync(
         IosBinaryContext context,
         IReadOnlyCollection<Radare2Import> imports,
@@ -94,36 +95,43 @@ public class IosCryptoAnalyzer : IRadare2Analyzer
     {
         var ccCryptImport = imports.FirstOrDefault(x =>
             !string.IsNullOrWhiteSpace(x.Name) &&
-            x.Name.Contains("CCCrypt", StringComparison.OrdinalIgnoreCase));
+            IsCCCryptImport(x.Name));
 
         if (ccCryptImport?.Name is null)
         {
             return;
         }
 
-        var xrefs = await context.Session.CmdJsonAsync<IReadOnlyCollection<Radare2Xref>>(
-            $"axtj @ {ccCryptImport.Name}",
-            cancellationToken) ?? [];
+        var target = GetImportReferenceTarget(ccCryptImport);
+
+        var xrefs = await GetXrefsAsync(
+            context,
+            $"axtj @ {target}",
+            cancellationToken);
 
         var evidence = new List<string>
         {
             $"import={ccCryptImport.Name}",
+            $"target={target}",
             $"xrefs={xrefs.Count}"
         };
 
         foreach (var xref in xrefs.Take(5))
         {
-            var instructions = await context.Session.CmdJsonAsync<IReadOnlyCollection<Radare2Instruction>>(
-                $"pdj 12 @ {xref.From}",
-                cancellationToken) ?? [];
-
             evidence.Add($"xref_from=0x{xref.From:x}");
+
+            var instructions = await GetInstructionsAsync(
+                context,
+                $"pdj 12 @ 0x{xref.From:x}",
+                cancellationToken);
 
             foreach (var instruction in instructions.Take(5))
             {
-                if (!string.IsNullOrWhiteSpace(instruction.Disasm ?? instruction.Opcode))
+                var text = instruction.Disasm ?? instruction.Opcode;
+
+                if (!string.IsNullOrWhiteSpace(text))
                 {
-                    evidence.Add($"{instruction.Offset:x}: {instruction.Disasm ?? instruction.Opcode}");
+                    evidence.Add($"0x{instruction.Offset:x}: {text}");
                 }
             }
         }
@@ -138,4 +146,71 @@ public class IosCryptoAnalyzer : IRadare2Analyzer
             Confidence: "medium",
             Evidence: evidence));
     }
+
+    private static bool IsCCCryptImport(string name)
+    {
+        return string.Equals(name, "CCCrypt", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(name, "sym.imp.CCCrypt", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string GetImportReferenceTarget(Radare2Import import)
+    {
+        if (import.Plt is > 0)
+        {
+            return $"0x{import.Plt.Value:x}";
+        }
+
+        return import.Name!.StartsWith("sym.imp.", StringComparison.Ordinal)
+            ? import.Name
+            : $"sym.imp.{import.Name}";
+    }
+
+    private static async Task<IReadOnlyCollection<Radare2Xref>> GetXrefsAsync(
+        IosBinaryContext context,
+        string command,
+        CancellationToken cancellationToken)
+    {
+        var output = await context.Session.CmdAsync(command, cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(output))
+        {
+            return [];
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<IReadOnlyCollection<Radare2Xref>>(
+                output,
+                JsonSerializerOptions.Web) ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    private static async Task<IReadOnlyCollection<Radare2Instruction>> GetInstructionsAsync(
+        IosBinaryContext context,
+        string command,
+        CancellationToken cancellationToken)
+    {
+        var output = await context.Session.CmdAsync(command, cancellationToken);
+
+        if (string.IsNullOrWhiteSpace(output))
+        {
+            return [];
+        }
+
+        try
+        {
+            return JsonSerializer.Deserialize<IReadOnlyCollection<Radare2Instruction>>(
+                output,
+                JsonSerializerOptions.Web) ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
 }
